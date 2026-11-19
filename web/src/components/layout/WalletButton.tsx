@@ -46,12 +46,7 @@ export function WalletButton() {
   }
 
   return (
-    <button
-      type="button"
-      className={styles.wallet}
-      onClick={() => disconnect()}
-      title="Disconnect"
-    >
+    <button type="button" className={styles.wallet} onClick={() => disconnect()} title="Disconnect">
       {hasAgentId ? (
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M3 8.5l3 3 7-7" stroke="var(--good)" strokeWidth="2.2" />

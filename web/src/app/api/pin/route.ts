@@ -12,7 +12,10 @@ const PINATA = "https://api.pinata.cloud/pinning";
 export async function POST(request: Request) {
   const jwt = process.env.PINATA_JWT;
   if (!jwt) {
-    return NextResponse.json({ error: "Pinning isn’t configured on this server." }, { status: 501 });
+    return NextResponse.json(
+      { error: "Pinning isn’t configured on this server." },
+      { status: 501 },
+    );
   }
 
   const form = await request.formData();
@@ -35,7 +38,10 @@ async function pinJson(raw: string, jwt: string) {
   const res = await fetch(`${PINATA}/pinJSONToIPFS`, {
     method: "POST",
     headers: { Authorization: `Bearer ${jwt}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ pinataContent: brief, pinataMetadata: { name: `brief:${brief.title}` } }),
+    body: JSON.stringify({
+      pinataContent: brief,
+      pinataMetadata: { name: `brief:${brief.title}` },
+    }),
   });
   return toResponse(res);
 }

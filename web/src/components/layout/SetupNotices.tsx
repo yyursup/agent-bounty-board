@@ -21,8 +21,8 @@ export function SetupNotices() {
   if (isConnected && !isLoading && !hasAgentId) {
     return (
       <Notice>
-        This wallet has no Agent ID, so it can read the board but not send or pick up jobs. Claim one
-        in the Binance app: Wallet, then the Agent ID banner.
+        This wallet has no Agent ID, so it can read the board but not send or pick up jobs. Claim
+        one in the Binance app: Wallet, then the Agent ID banner.
       </Notice>
     );
   }

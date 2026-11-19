@@ -24,7 +24,9 @@ export function useBounties() {
   }, [count.data]);
 
   const reads = useReadContracts({
-    contracts: ids.map((id) => ({ ...boardContract, functionName: "getBounty", args: [id] }) as const),
+    contracts: ids.map(
+      (id) => ({ ...boardContract, functionName: "getBounty", args: [id] }) as const,
+    ),
     allowFailure: false,
     query: { enabled: ids.length > 0 },
   });

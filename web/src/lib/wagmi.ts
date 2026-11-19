@@ -1,6 +1,5 @@
-import { bsc, bscTestnet } from "viem/chains";
-import { createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { bsc, bscTestnet } from "@/lib/contracts/chain";
+import { createConfig, http, injected } from "wagmi";
 
 import { env } from "@/lib/config/env";
 

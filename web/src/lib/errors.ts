@@ -2,7 +2,8 @@ import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } fr
 
 /** Plain-language messages for the contract's custom errors. */
 const CONTRACT_ERRORS: Record<string, string> = {
-  NotAgentIdHolder: "This wallet doesn’t hold an Agent ID. Claim one in the Binance app under Wallet.",
+  NotAgentIdHolder:
+    "This wallet doesn’t hold an Agent ID. Claim one in the Binance app under Wallet.",
   InvalidReward: "The reward is zero or above the board’s current limit.",
   InvalidDeadline: "Pick a deadline between 1 hour and 30 days from now.",
   InvalidReviewWindow: "The review window must be between 24 hours and 7 days.",

@@ -1,0 +1,26 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.label {
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+.clock {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 44px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  transition: color 0.4s ease;
+}
+.urgent {
+  color: var(--coral-ink);
+  animation: urgent 2s ease-in-out infinite;
+}
+@keyframes urgent {
+  50% {
+    opacity: 0.55;
+  }
+}

@@ -19,6 +19,8 @@ export const env = {
   rewardTokenAddress,
   rpcUrl: process.env.NEXT_PUBLIC_RPC_URL || undefined,
   ipfsGateway: process.env.NEXT_PUBLIC_IPFS_GATEWAY || "https://gateway.pinata.cloud/ipfs/",
+  /** Block the board was deployed in; event history (ratings per job) is read from here on. */
+  deployBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
   /** False until the deploy addresses are filled in; the UI shows a notice instead of failing calls. */
   isConfigured: boardAddress !== zeroAddress && rewardTokenAddress !== zeroAddress,
 } as const;

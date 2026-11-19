@@ -19,7 +19,7 @@ type StampProps = {
   title: string;
   amount: { whole: string; cents: string };
   unit?: string;
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
   /** Extra classes on the perforated frame, used for motion. */
   className?: string;
   style?: CSSProperties;

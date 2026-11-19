@@ -1,0 +1,159 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.title {
+  font-weight: 800;
+  font-size: clamp(56px, 7vw, 104px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  font-variation-settings:
+    "opsz" 96,
+    "wdth" 80;
+}
+.lede {
+  max-width: 420px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pill {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--line-strong);
+  background: transparent;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.pill:hover {
+  background: var(--cobalt-tint);
+}
+.pill[aria-pressed="true"] {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  color: #fff;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.toggle input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--cobalt);
+}
+
+.empty {
+  padding: 64px 0;
+  font-size: 20px;
+  color: var(--ink-muted);
+  text-align: center;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 40px 32px;
+}
+
+/* Stamps deal in one by one; two identical keyframes let a re-deal restart the animation. */
+.dealA {
+  animation: dealA 0.55s var(--ease-out) both;
+}
+.dealB {
+  animation: dealB 0.55s var(--ease-out) both;
+}
+@keyframes dealA {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-3deg);
+  }
+}
+@keyframes dealB {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-3deg);
+  }
+}
+.out {
+  animation: out 0.3s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+@keyframes out {
+  to {
+    opacity: 0;
+    transform: translateY(40px) scale(0.92) rotate(4deg);
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.cardStamp {
+  transition:
+    transform 0.3s var(--ease-out),
+    filter 0.3s ease;
+}
+.card:hover .cardStamp {
+  transform: translateY(-6px) rotate(-1deg);
+  filter: drop-shadow(0 22px 30px rgba(20, 22, 43, 0.2));
+}
+.cardMark {
+  position: absolute;
+  right: -12px;
+  top: 150px;
+}
+.cardMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 0 4px;
+}
+.cardWhen {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.cardWhen :global(.mono) {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-muted);
+}

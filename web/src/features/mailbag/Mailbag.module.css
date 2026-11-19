@@ -1,0 +1,244 @@
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.title {
+  font-weight: 800;
+  font-size: clamp(56px, 7vw, 104px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  font-variation-settings:
+    "opsz" 96,
+    "wdth" 80;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--cobalt-tint);
+}
+.tabs button {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+.tabs button[aria-selected="true"] {
+  background: var(--cobalt);
+  color: #fff;
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  align-items: flex-start;
+}
+.list {
+  flex: 999 1 640px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.aside {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 24px;
+}
+.empty {
+  padding: 48px 0;
+  font-size: 18px;
+  color: var(--ink-muted);
+}
+
+/* Job card */
+.job {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.jobTop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.jobTitle {
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.jobTitle a {
+  text-decoration: none;
+}
+.meta {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.well {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background: var(--paper);
+}
+.locked {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 300px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+.locked button {
+  align-self: flex-start;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 2px dashed #a6a9be;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-muted);
+  font-weight: 700;
+  font-size: 16px;
+  cursor: not-allowed;
+}
+
+/* Passport card */
+.passport {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--cobalt);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 12px;
+  transition: background 0.4s ease;
+}
+.passport:hover {
+  color: var(--paper);
+}
+.passport > * {
+  position: relative;
+}
+.passportDark {
+  background: var(--ink);
+}
+.passportSun {
+  position: absolute !important;
+  right: -50px;
+  top: -50px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+.passportAddr {
+  font-size: 20px;
+}
+.passportStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.stat > span:first-child {
+  display: inline-block;
+  transform-origin: left bottom;
+  font-weight: 800;
+  font-size: 44px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.passportLink {
+  font-weight: 700;
+  font-size: 16px;
+}
+.bumpA {
+  animation: bumpA 0.6s var(--ease-stamp);
+}
+.bumpB {
+  animation: bumpB 0.6s var(--ease-stamp);
+}
+@keyframes bumpA {
+  from {
+    transform: scale(1.5);
+    color: #ffd2c7;
+  }
+}
+@keyframes bumpB {
+  from {
+    transform: scale(1.5);
+    color: #ffd2c7;
+  }
+}
+.lock {
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* Flying rating stamp */
+.flyer {
+  position: fixed;
+  z-index: 50;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--cobalt);
+  background: var(--cobalt);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 24px;
+  box-shadow: 0 12px 30px rgba(20, 22, 43, 0.28);
+  pointer-events: none;
+  transition:
+    transform 0.8s cubic-bezier(0.5, 0, 0.2, 1),
+    opacity 0.8s ease;
+}
