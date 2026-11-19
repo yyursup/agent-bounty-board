@@ -1,0 +1,61 @@
+.header {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+.inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 16px var(--page-pad);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.nav a {
+  text-decoration: none;
+  padding-bottom: 4px;
+}
+.active {
+  color: var(--cobalt);
+  box-shadow: 0 3px 0 var(--cobalt);
+}
+.wallet {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  cursor: pointer;
+}
+.wallet:disabled {
+  cursor: wait;
+}
+.walletWarn {
+  border-color: var(--coral);
+  color: #8a2a12;
+}
+.address {
+  color: var(--ink-muted);
+}

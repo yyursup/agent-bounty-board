@@ -1,0 +1,26 @@
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.info {
+  background: var(--cobalt-tint);
+}
+.dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+.dark a {
+  color: var(--paper);
+  font-weight: 700;
+}
+.error {
+  background: var(--peach);
+  color: #8a2a12;
+}

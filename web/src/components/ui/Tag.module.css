@@ -1,0 +1,30 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.open {
+  background: var(--cobalt);
+  color: #fff;
+}
+.progress {
+  background: var(--cobalt-tint);
+  color: var(--cobalt);
+}
+.warn {
+  background: var(--peach);
+  color: #8a2a12;
+}
+.good {
+  background: var(--good-tint);
+  color: var(--good);
+}
+.neutral {
+  background: #f0f0f4;
+  color: var(--ink-soft);
+}

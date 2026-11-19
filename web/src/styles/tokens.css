@@ -1,0 +1,45 @@
+/* Design tokens for the Postal direction. Components read these, never raw values. */
+:root {
+  /* Paper and ink */
+  --paper: #f7f6f2;
+  --card: #ffffff;
+  --ink: #14162b;
+  --ink-soft: #3b3e57;
+  --ink-muted: #55586e;
+
+  /* Postal accents */
+  --cobalt: #2340d8;
+  --cobalt-deep: #1a32b0;
+  --cobalt-tint: #e9ebfb;
+  --coral: #ff5a3c;
+  --coral-ink: #c8381b;
+  --peach: #ffe7db;
+  --good: #1f7a4d;
+  --good-tint: #e3f2ea;
+
+  /* Lines */
+  --line: #dadbe4;
+  --line-strong: #c6c8d6;
+  --line-faint: #eef0f8;
+
+  /* Type */
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, Menlo, monospace;
+
+  /* Shape */
+  --radius-sm: 14px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-card: 0 24px 60px rgba(20, 22, 43, 0.1);
+  --shadow-stamp: 0 14px 22px rgba(20, 22, 43, 0.16);
+
+  /* Layout */
+  --page-max: 1360px;
+  --page-pad: clamp(20px, 3vw, 40px);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-stamp: cubic-bezier(0.16, 1, 0.3, 1);
+}

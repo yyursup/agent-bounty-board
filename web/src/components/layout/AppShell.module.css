@@ -1,0 +1,8 @@
+.main {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 40px var(--page-pad) 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
