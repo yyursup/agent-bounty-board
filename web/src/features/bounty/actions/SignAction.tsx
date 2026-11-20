@@ -3,8 +3,8 @@
 import { useState } from "react";
 import type { Address } from "viem";
 
-import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
+import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
 import { useBountyActions } from "@/hooks/useBountyActions";
 import { usePromptContext } from "@/hooks/usePromptContext";
@@ -37,39 +37,55 @@ export function SignAction({
   const sign = useBountyActions();
   const ret = useBountyActions();
   const ctx = usePromptContext();
-  const [open, setOpen] = useState(false);
+  const [sheet, setSheet] = useState<"none" | "sign" | "return">("none");
   const [rating, setRating] = useState(5);
   const [picked, setPicked] = useState<HTMLElement | null>(null);
   const returnable = canReject(bounty, me, now);
 
-  if (!open) {
+  if (sheet === "none") {
     return (
-      <div className={styles.stack}>
-        <div className={styles.row}>
-          <Button
-            size="lg"
-            onClick={() => {
-              setOpen(true);
-              onOpen?.();
-            }}
-          >
-            Sign for it
-          </Button>
-          {returnable && canSign && (
-            <Button
-              size="lg"
-              variant="outline"
-              disabled={ret.busy}
-              onClick={() => ret.reject(bounty.id)}
-            >
-              Return to sender
-            </Button>
-          )}
-        </div>
-        <TxStatus phase={ret.phase} error={ret.error} hash={ret.hash} />
+      <div className={styles.row}>
+        <Button
+          size="lg"
+          onClick={() => {
+            setSheet("sign");
+            onOpen?.();
+          }}
+        >
+          Sign for it
+        </Button>
         {returnable && (
-          <AgentPrompt task={returnTask(ctx, bounty.id)} label="Return it with Binance AI Pro" />
+          <Button size="lg" variant="outline" onClick={() => setSheet("return")}>
+            Return to sender
+          </Button>
         )}
+      </div>
+    );
+  }
+
+  if (sheet === "return") {
+    return (
+      <div className={styles.sheet}>
+        <span className={styles.label}>Return the delivery</span>
+        <p className={styles.hint}>
+          The job goes back on the board for another agent, and the rejection is recorded on their
+          passport.
+        </p>
+        <TwoWays
+          canSign={canSign}
+          task={returnTask(ctx, bounty.id)}
+          manual={
+            <div className={styles.stack}>
+              <Button disabled={ret.busy} onClick={() => ret.reject(bounty.id)}>
+                Return it
+              </Button>
+              <TxStatus phase={ret.phase} error={ret.error} hash={ret.hash} />
+            </div>
+          }
+        />
+        <Button variant="quiet" disabled={ret.busy} onClick={() => setSheet("none")}>
+          Back
+        </Button>
       </div>
     );
   }
@@ -95,23 +111,26 @@ export function SignAction({
         ))}
       </div>
       <p className={styles.hint}>Pays the agent and records {rating}/5.</p>
-      <div className={styles.row}>
-        {canSign && (
-          <Button
-            disabled={sign.busy}
-            onClick={async () => {
-              if (await sign.approve(bounty.id, rating)) onSigned?.(rating, picked);
-            }}
-          >
-            Sign and pay
-          </Button>
-        )}
-        <Button variant="outline" disabled={sign.busy} onClick={() => setOpen(false)}>
-          Back
-        </Button>
-      </div>
-      <TxStatus phase={sign.phase} error={sign.error} hash={sign.hash} />
-      <AgentPrompt task={signTask(ctx, bounty.id, rating)} defaultOpen={!canSign} />
+      <TwoWays
+        canSign={canSign}
+        task={signTask(ctx, bounty.id, rating)}
+        manual={
+          <div className={styles.stack}>
+            <Button
+              disabled={sign.busy}
+              onClick={async () => {
+                if (await sign.approve(bounty.id, rating)) onSigned?.(rating, picked);
+              }}
+            >
+              Sign and pay
+            </Button>
+            <TxStatus phase={sign.phase} error={sign.error} hash={sign.hash} />
+          </div>
+        }
+      />
+      <Button variant="quiet" disabled={sign.busy} onClick={() => setSheet("none")}>
+        Back
+      </Button>
     </div>
   );
 }

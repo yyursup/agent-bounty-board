@@ -6,6 +6,7 @@ import { useReadContracts } from "wagmi";
 
 import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
+import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
 import { useHasAgentId } from "@/hooks/useAgent";
 import { useBountyActions } from "@/hooks/useBountyActions";
@@ -20,7 +21,8 @@ import styles from "./SendJob.module.css";
 import type { SendForm } from "./useSendForm";
 
 /**
- * Two ways to seal a job, both in two steps (approve exactly the reward, then post):
+ * Two ways to seal a job, chosen with the Sign here / Binance AI Pro switch, both in two steps
+ * (approve exactly the reward, then post):
  *  - with a connected wallet, right here;
  *  - with Binance AI Pro: the brief is pinned first, then a prompt carries both calls.
  */
@@ -55,16 +57,19 @@ export function SealSteps({
         </ul>
       )}
 
-      {who.canSign && (
-        <WalletSeal
-          form={form}
-          decimals={decimals}
-          symbol={symbol}
-          shown={shown}
-          onPosted={onPosted}
-        />
-      )}
-      <AgentSeal form={form} openByDefault={!who.canSign} />
+      <TwoWays
+        canSign={who.canSign}
+        manual={
+          <WalletSeal
+            form={form}
+            decimals={decimals}
+            symbol={symbol}
+            shown={shown}
+            onPosted={onPosted}
+          />
+        }
+        agent={<AgentSeal form={form} />}
+      />
 
       <p className={`mono ${styles.note}`}>
         You confirm every step, in your wallet or in the Binance App. The contract is unaudited:
@@ -75,7 +80,7 @@ export function SealSteps({
 }
 
 /** Pins the brief, then hands the agent a prompt with the exact approval and the post. */
-function AgentSeal({ form, openByDefault }: { form: SendForm; openByDefault: boolean }) {
+function AgentSeal({ form }: { form: SendForm }) {
   const ctx = usePromptContext();
   const [pinned, setPinned] = useState<{ key: string; uri: string } | null>(null);
   const [pinning, setPinning] = useState(false);
@@ -108,7 +113,7 @@ function AgentSeal({ form, openByDefault }: { form: SendForm; openByDefault: boo
   if (current && form.amount) {
     return (
       <AgentPrompt
-        defaultOpen
+        bare
         task={postTask(ctx, {
           title: form.fields.title.trim(),
           reward: form.amount,
@@ -121,16 +126,12 @@ function AgentSeal({ form, openByDefault }: { form: SendForm; openByDefault: boo
   }
 
   return (
-    <div className={`${styles.step} ${openByDefault ? "" : styles.stepQuiet}`}>
+    <div className={styles.step}>
       <span className={styles.stepText}>
         <strong>Post with Binance AI Pro</strong>
         <span>We pin the brief to IPFS, then give you a prompt to paste into your agent.</span>
       </span>
-      <Button
-        variant={openByDefault ? "primary" : "outline"}
-        disabled={!form.ready || pinning}
-        onClick={prepare}
-      >
+      <Button disabled={!form.ready || pinning} onClick={prepare}>
         {pinning ? "Pinning the brief…" : "Prepare the prompt"}
       </Button>
       {error && (

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
+import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
 import { useBountyActions } from "@/hooks/useBountyActions";
 import { usePromptContext } from "@/hooks/usePromptContext";
@@ -31,13 +31,7 @@ export function DeliverAction({ bounty, canSign }: { bounty: Bounty; canSign: bo
   }
 
   return (
-    <form
-      className={styles.sheet}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (valid && canSign) void submit(bounty.id, trimmed);
-      }}
-    >
+    <div className={styles.sheet}>
       <label className={styles.label}>
         Link to your result
         <input
@@ -53,26 +47,22 @@ export function DeliverAction({ bounty, canSign }: { bounty: Bounty; canSign: bo
         Filing opens the sender’s {hours(bounty.reviewWindow)} review window. Anyone can read the
         link.
       </p>
-      <div className={styles.row}>
-        {canSign && (
-          <Button type="submit" disabled={!valid || busy}>
-            File delivery
-          </Button>
-        )}
-        <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
-          Cancel
-        </Button>
-      </div>
-      <TxStatus phase={phase} error={error} hash={hash} />
-      {valid ? (
-        <AgentPrompt task={deliverTask(ctx, bounty.id, trimmed)} defaultOpen={!canSign} />
-      ) : (
-        !canSign && (
-          <p className={styles.hint}>
-            Paste the link to your result to get the prompt for your agent.
-          </p>
-        )
-      )}
-    </form>
+      <TwoWays
+        canSign={canSign}
+        task={valid ? deliverTask(ctx, bounty.id, trimmed) : null}
+        agentPending={<p className={styles.hint}>Paste the link above to get the prompt.</p>}
+        manual={
+          <div className={styles.stack}>
+            <Button disabled={!valid || busy} onClick={() => submit(bounty.id, trimmed)}>
+              File delivery
+            </Button>
+            <TxStatus phase={phase} error={error} hash={hash} />
+          </div>
+        }
+      />
+      <Button variant="quiet" onClick={() => setOpen(false)} disabled={busy}>
+        Cancel
+      </Button>
+    </div>
   );
 }

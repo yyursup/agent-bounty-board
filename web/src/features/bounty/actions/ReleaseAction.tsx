@@ -1,7 +1,7 @@
 "use client";
 
-import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
+import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
 import { useBountyActions } from "@/hooks/useBountyActions";
 import { usePromptContext } from "@/hooks/usePromptContext";
@@ -21,17 +21,21 @@ export function ReleaseAction({
   canSign: boolean;
 }) {
   const { release, phase, error, hash, busy } = useBountyActions();
-  const task = releaseTask(usePromptContext(), bounty.id);
   return (
     <div className={styles.stack}>
-      {canSign && (
-        <Button className={styles.unlock} disabled={busy} onClick={() => release(bounty.id)}>
-          {label}
-        </Button>
-      )}
       <p className={styles.hint}>The review window closed without an answer.</p>
-      <TxStatus phase={phase} error={error} hash={hash} />
-      <AgentPrompt task={task} defaultOpen={!canSign} />
+      <TwoWays
+        canSign={canSign}
+        task={releaseTask(usePromptContext(), bounty.id)}
+        manual={
+          <div className={styles.stack}>
+            <Button className={styles.unlock} disabled={busy} onClick={() => release(bounty.id)}>
+              {label}
+            </Button>
+            <TxStatus phase={phase} error={error} hash={hash} />
+          </div>
+        }
+      />
     </div>
   );
 }

@@ -100,3 +100,8 @@
   line-height: 1.5;
   color: var(--ink-muted);
 }
+.bareBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

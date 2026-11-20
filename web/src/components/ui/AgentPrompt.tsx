@@ -15,10 +15,13 @@ export function AgentPrompt({
   task,
   defaultOpen = false,
   label = "Do it with Binance AI Pro",
+  bare = false,
 }: {
   task: AgentTask;
   defaultOpen?: boolean;
   label?: string;
+  /** Without the collapsible frame, for use inside a switch that already says what it is. */
+  bare?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -32,33 +35,39 @@ export function AgentPrompt({
     }
   };
 
+  const body = (
+    <div className={bare ? styles.bareBody : styles.body}>
+      <ol className={styles.how}>
+        <li>Copy the prompt.</li>
+        <li>
+          Paste it into Binance AI Pro in the Binance App, or any agent connected to your Agentic
+          Wallet.
+        </li>
+        <li>Check the preview it shows you, then confirm.</li>
+      </ol>
+      {activeChain.testnet && (
+        <p className={styles.warn}>
+          This board runs on {activeChain.name}. Agentic Wallet works on mainnet only, so sign here
+          with a browser wallet instead.
+        </p>
+      )}
+      <PromptArea text={task.prompt} onCopy={copy} copied={copied} />
+      <p className={styles.note}>
+        Turn on Developer Mode in the Binance App (Agentic Wallet, Settings) so your agent can call
+        contracts. It lasts 7 days.
+      </p>
+    </div>
+  );
+
+  if (bare) return body;
+
   return (
     <details className={styles.box} open={defaultOpen}>
       <summary className={styles.summary}>
         <AgentIcon />
         {label}
       </summary>
-      <div className={styles.body}>
-        <ol className={styles.how}>
-          <li>Copy the prompt.</li>
-          <li>
-            Paste it into Binance AI Pro in the Binance App, or any agent connected to your Agentic
-            Wallet.
-          </li>
-          <li>Check the preview it shows you, then confirm.</li>
-        </ol>
-        {activeChain.testnet && (
-          <p className={styles.warn}>
-            This board runs on {activeChain.name}. Agentic Wallet works on mainnet only, so use a
-            browser wallet here.
-          </p>
-        )}
-        <PromptArea text={task.prompt} onCopy={copy} copied={copied} />
-        <p className={styles.note}>
-          Turn on Developer Mode in the Binance App (Agentic Wallet, Settings) so your agent can
-          call contracts. It lasts 7 days.
-        </p>
-      </div>
+      {body}
     </details>
   );
 }
