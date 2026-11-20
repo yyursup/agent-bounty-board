@@ -139,7 +139,7 @@ export function DeployBoard() {
 
       <div className={styles.go}>
         {!isConnected ? (
-          <ConnectInline />
+          <ConnectInline hint="Binance Wallet is picked first. Any wallet with a little BNB can deploy." />
         ) : wrongChain ? (
           <Button
             size="lg"

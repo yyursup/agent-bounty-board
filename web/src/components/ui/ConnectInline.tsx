@@ -6,7 +6,11 @@ import { Button } from "./Button";
 import styles from "./TwoWays.module.css";
 
 /** Connect a browser wallet right where the action is, without going back to the header. */
-export function ConnectInline() {
+export function ConnectInline({
+  hint = "Binance Wallet is picked first. The wallet must hold an Agent ID, or the board will refuse it.",
+}: {
+  hint?: string;
+} = {}) {
   const { connect, connectors, isPending, error } = useConnect();
   const injected = connectors[0];
 
