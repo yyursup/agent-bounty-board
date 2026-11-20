@@ -1,9 +1,8 @@
 "use client";
 
-import type { Address } from "viem";
-
 import { canApprove, canCancel, canClaim, canRelease, canSubmit } from "@/lib/bounty/lifecycle";
 import { BountyStatus, type Bounty } from "@/lib/bounty/types";
+import type { Identity } from "@/lib/wallet/identity";
 
 import { ClaimAction } from "./actions/ClaimAction";
 import { DeliverAction } from "./actions/DeliverAction";
@@ -12,24 +11,38 @@ import { ReleaseAction } from "./actions/ReleaseAction";
 import { SignAction } from "./actions/SignAction";
 import styles from "./Parcel.module.css";
 
-/** Shows only the actions the contract would accept from this visitor right now. */
+/**
+ * Shows only the actions the contract would accept from this visitor right now. With a connected
+ * wallet they can act here; otherwise each action comes as a prompt for their agent.
+ */
 export function ParcelActions({
   bounty,
-  me,
+  who,
   now,
 }: {
   bounty: Bounty;
-  me: Address | undefined;
+  who: Identity;
   now: number;
 }) {
-  if (!me)
-    return <p className={styles.muted}>Connect a wallet with an Agent ID to pick this up.</p>;
+  const me = who.address;
+  const canSign = who.canSign;
 
-  if (canClaim(bounty, me, now)) return <ClaimAction bounty={bounty} />;
-  if (canSubmit(bounty, me, now)) return <DeliverAction bounty={bounty} />;
-  if (canRelease(bounty, me, now)) return <ReleaseAction bounty={bounty} label="Release payment" />;
-  if (canApprove(bounty, me)) return <SignAction bounty={bounty} me={me} now={now} />;
-  if (canCancel(bounty, me, now)) return <RefundAction bounty={bounty} />;
+  // Nobody identified yet: an open job can still be picked up by an agent through a prompt.
+  if (!me) {
+    if (bounty.status === BountyStatus.Open && now < bounty.deadline) {
+      return <ClaimAction bounty={bounty} canSign={false} />;
+    }
+    return <p className={styles.muted}>{idleMessage(bounty)}</p>;
+  }
+
+  if (canClaim(bounty, me, now)) return <ClaimAction bounty={bounty} canSign={canSign} />;
+  if (canSubmit(bounty, me, now)) return <DeliverAction bounty={bounty} canSign={canSign} />;
+  if (canRelease(bounty, me, now)) {
+    return <ReleaseAction bounty={bounty} label="Release payment" canSign={canSign} />;
+  }
+  if (canApprove(bounty, me))
+    return <SignAction bounty={bounty} me={me} now={now} canSign={canSign} />;
+  if (canCancel(bounty, me, now)) return <RefundAction bounty={bounty} canSign={canSign} />;
 
   return <p className={styles.muted}>{idleMessage(bounty)}</p>;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useAccount } from "wagmi";
 
 import { Notice } from "@/components/ui/Notice";
 import { useBounty } from "@/hooks/useBounties";
@@ -9,6 +8,7 @@ import { useBrief } from "@/hooks/useBrief";
 import { useNow } from "@/hooks/useNow";
 import { useRewardToken } from "@/hooks/useRewardToken";
 import { toGatewayUrl } from "@/lib/ipfs";
+import { useIdentity } from "@/lib/wallet/identity";
 
 import { BriefSection } from "./BriefSection";
 import { ParcelActions } from "./ParcelActions";
@@ -22,7 +22,7 @@ export function ParcelView({ id }: { id: bigint }) {
   const { bounty, isLoading, error } = useBounty(id);
   const brief = useBrief(bounty?.briefURI);
   const { decimals, symbol } = useRewardToken();
-  const { address } = useAccount();
+  const who = useIdentity();
   const now = useNow();
 
   if (isLoading) return <p className={styles.loading}>Finding parcel #{String(id)}…</p>;
@@ -48,7 +48,7 @@ export function ParcelView({ id }: { id: bigint }) {
 
         <aside aria-label="Postage and actions" className={styles.side}>
           <PostagePanel bounty={bounty} decimals={decimals} symbol={symbol}>
-            <ParcelActions bounty={bounty} me={address} now={now} />
+            <ParcelActions bounty={bounty} who={who} now={now} />
           </PostagePanel>
         </aside>
       </div>

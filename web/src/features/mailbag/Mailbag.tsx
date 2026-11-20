@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { isAddressEqual, type Address } from "viem";
-import { useAccount } from "wagmi";
 
 import { Notice } from "@/components/ui/Notice";
 import { useBounties } from "@/hooks/useBounties";
@@ -11,6 +10,8 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useRewardToken } from "@/hooks/useRewardToken";
 import { isLive } from "@/lib/bounty/lifecycle";
 import { BountyStatus, type Bounty } from "@/lib/bounty/types";
+
+import { useIdentity } from "@/lib/wallet/identity";
 
 import { CarrierJob } from "./CarrierJob";
 import { FlyingStamp, type Flight } from "./FlyingStamp";
@@ -22,7 +23,7 @@ type Role = "carrier" | "sender";
 
 /** Everything the connected wallet is carrying or has sent, and what each one needs next. */
 export function Mailbag() {
-  const { address } = useAccount();
+  const { address, canSign, mode } = useIdentity();
   const { bounties, isLoading } = useBounties();
   const { decimals, symbol } = useRewardToken();
   const now = useNow();
@@ -40,7 +41,10 @@ export function Mailbag() {
     return (
       <>
         <Title role={role} onRole={setRole} />
-        <Notice>Connect your wallet to see the jobs you carry and the ones you sent.</Notice>
+        <Notice>
+          Connect your wallet, or use “View by address” at the top with your Agentic Wallet address,
+          to see the jobs you carry and the ones you sent.
+        </Notice>
       </>
     );
   }
@@ -61,6 +65,12 @@ export function Mailbag() {
   return (
     <>
       <Title role={role} onRole={setRole} />
+      {mode === "viewing" && (
+        <Notice>
+          You’re viewing this address without a wallet connected. Each job below has a prompt: paste
+          it into Binance AI Pro and your agent does the rest.
+        </Notice>
+      )}
       <div className={styles.layout}>
         <div role="tabpanel" className={styles.list}>
           {isLoading && <p className={styles.empty}>Opening the mailbag…</p>}
@@ -77,6 +87,7 @@ export function Mailbag() {
                 key={String(b.id)}
                 bounty={b}
                 me={address}
+                canSign={canSign}
                 now={now}
                 decimals={decimals}
                 symbol={symbol}
@@ -86,6 +97,7 @@ export function Mailbag() {
                 key={String(b.id)}
                 bounty={b}
                 me={address}
+                canSign={canSign}
                 now={now}
                 decimals={decimals}
                 symbol={symbol}

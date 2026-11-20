@@ -15,13 +15,14 @@ import styles from "./Mailbag.module.css";
 export function SenderJob(props: {
   bounty: Bounty;
   me: Address;
+  canSign: boolean;
   now: number;
   decimals: number;
   symbol: string;
   onFocus: () => void;
   onSigned: (rating: number, from: HTMLElement | null) => void;
 }) {
-  const { bounty, me, now, decimals, symbol, onFocus, onSigned } = props;
+  const { bounty, me, canSign, now, decimals, symbol, onFocus, onSigned } = props;
   const s = bounty.status;
 
   return (
@@ -56,9 +57,16 @@ export function SenderJob(props: {
       )}
 
       {canApprove(bounty, me) && (
-        <SignAction bounty={bounty} me={me} now={now} onOpen={onFocus} onSigned={onSigned} />
+        <SignAction
+          bounty={bounty}
+          me={me}
+          now={now}
+          canSign={canSign}
+          onOpen={onFocus}
+          onSigned={onSigned}
+        />
       )}
-      {canCancel(bounty, me, now) && <RefundAction bounty={bounty} />}
+      {canCancel(bounty, me, now) && <RefundAction bounty={bounty} canSign={canSign} />}
     </JobCard>
   );
 }

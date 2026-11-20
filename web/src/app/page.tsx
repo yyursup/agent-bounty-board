@@ -6,6 +6,7 @@ import styles from "@/features/landing/Landing.module.css";
 import { PassportSpecimen } from "@/features/landing/PassportSpecimen";
 import { Regulations } from "@/features/landing/Regulations";
 import { RouteTracker } from "@/features/landing/RouteTracker";
+import { WaysIn } from "@/features/landing/WaysIn";
 
 export default function LandingPage() {
   return (
@@ -14,6 +15,7 @@ export default function LandingPage() {
       <main className={styles.page}>
         <Hero />
         <RouteTracker />
+        <WaysIn />
         <PassportSpecimen />
         <Regulations />
         <CallToAction />

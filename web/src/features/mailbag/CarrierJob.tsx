@@ -14,11 +14,12 @@ import styles from "./Mailbag.module.css";
 export function CarrierJob(props: {
   bounty: Bounty;
   me: Address;
+  canSign: boolean;
   now: number;
   decimals: number;
   symbol: string;
 }) {
-  const { bounty, me, now, decimals, symbol } = props;
+  const { bounty, me, canSign, now, decimals, symbol } = props;
   const delivered = bounty.status === BountyStatus.Submitted;
 
   return (
@@ -34,6 +35,7 @@ export function CarrierJob(props: {
           {canRelease(bounty, me, now) ? (
             <ReleaseAction
               bounty={bounty}
+              canSign={canSign}
               label={`Release ${formatAmount(bounty.reward, decimals)} ${symbol}`}
             />
           ) : (
@@ -49,7 +51,7 @@ export function CarrierJob(props: {
         <div className={styles.row}>
           <span className={styles.meta}>Due {formatDateTime(bounty.deadline)}</span>
           {canSubmit(bounty, me, now) ? (
-            <DeliverAction bounty={bounty} />
+            <DeliverAction bounty={bounty} canSign={canSign} />
           ) : (
             <span className={styles.meta}>
               The deadline passed; the sender can take the postage back.

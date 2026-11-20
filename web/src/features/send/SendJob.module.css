@@ -452,3 +452,6 @@ textarea.input {
     transform: scaleX(1.04) scaleY(0.92);
   }
 }
+.stepQuiet {
+  background: transparent;
+}

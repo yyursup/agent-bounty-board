@@ -2,22 +2,27 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useAccount, useReadContracts } from "wagmi";
+import { useReadContracts } from "wagmi";
 
+import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
 import { TxStatus } from "@/components/ui/TxStatus";
 import { useHasAgentId } from "@/hooks/useAgent";
 import { useBountyActions } from "@/hooks/useBountyActions";
+import { usePromptContext } from "@/hooks/usePromptContext";
+import { postTask } from "@/lib/agent/prompts";
 import { boardContract, tokenContract } from "@/lib/contracts";
 import { formatAmount } from "@/lib/format";
 import { pinBrief, pinFile } from "@/lib/ipfs";
+import { useIdentity } from "@/lib/wallet/identity";
 
 import styles from "./SendJob.module.css";
 import type { SendForm } from "./useSendForm";
 
 /**
- * Two wallet steps, kept apart on purpose: approve exactly the reward, then post. Posting pins
- * the brief (and its attachment) to IPFS first, then locks the reward in escrow.
+ * Two ways to seal a job, both in two steps (approve exactly the reward, then post):
+ *  - with a connected wallet, right here;
+ *  - with Binance AI Pro: the brief is pinned first, then a prompt carries both calls.
  */
 export function SealSteps({
   form,
@@ -30,7 +35,128 @@ export function SealSteps({
   symbol: string;
   onPosted: () => void;
 }) {
-  const { address } = useAccount();
+  const who = useIdentity();
+  const { hasAgentId } = useHasAgentId(who.address);
+  const amount = form.amount;
+  const shown = amount ? formatAmount(amount, decimals) : "—";
+
+  return (
+    <div className={styles.steps}>
+      {who.address && !hasAgentId && (
+        <p className={styles.error}>
+          This address has no Agent ID, so the board won’t accept a job from it.
+        </p>
+      )}
+      {form.problems.length > 0 && (
+        <ul className={styles.problems}>
+          {form.problems.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
+
+      {who.canSign && (
+        <WalletSeal
+          form={form}
+          decimals={decimals}
+          symbol={symbol}
+          shown={shown}
+          onPosted={onPosted}
+        />
+      )}
+      <AgentSeal form={form} openByDefault={!who.canSign} />
+
+      <p className={`mono ${styles.note}`}>
+        You confirm every step, in your wallet or in the Binance App. The contract is unaudited:
+        only seal what you’re prepared to lose.
+      </p>
+    </div>
+  );
+}
+
+/** Pins the brief, then hands the agent a prompt with the exact approval and the post. */
+function AgentSeal({ form, openByDefault }: { form: SendForm; openByDefault: boolean }) {
+  const ctx = usePromptContext();
+  const [pinned, setPinned] = useState<{ key: string; uri: string } | null>(null);
+  const [pinning, setPinning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // The pinned brief belongs to the form as it was; any edit means pinning again.
+  const key = JSON.stringify([
+    form.toBrief("pending"),
+    form.fields.file?.name,
+    form.fields.file?.size,
+  ]);
+  const current = pinned?.key === key ? pinned.uri : null;
+
+  const prepare = async () => {
+    setError(null);
+    setPinning(true);
+    try {
+      const attachmentUri =
+        form.fields.mode === "attach" && form.fields.file
+          ? await pinFile(form.fields.file)
+          : undefined;
+      setPinned({ key, uri: await pinBrief(form.toBrief(attachmentUri)) });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn’t pin the brief.");
+    } finally {
+      setPinning(false);
+    }
+  };
+
+  if (current && form.amount) {
+    return (
+      <AgentPrompt
+        defaultOpen
+        task={postTask(ctx, {
+          title: form.fields.title.trim(),
+          reward: form.amount,
+          deadline: form.deadlineUnix,
+          reviewWindow: form.reviewSeconds,
+          briefURI: current,
+        })}
+      />
+    );
+  }
+
+  return (
+    <div className={`${styles.step} ${openByDefault ? "" : styles.stepQuiet}`}>
+      <span className={styles.stepText}>
+        <strong>Post with Binance AI Pro</strong>
+        <span>We pin the brief to IPFS, then give you a prompt to paste into your agent.</span>
+      </span>
+      <Button
+        variant={openByDefault ? "primary" : "outline"}
+        disabled={!form.ready || pinning}
+        onClick={prepare}
+      >
+        {pinning ? "Pinning the brief…" : "Prepare the prompt"}
+      </Button>
+      {error && (
+        <p role="alert" className={styles.error}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** The browser-wallet path: approve exactly the reward, then pin and post. */
+function WalletSeal({
+  form,
+  decimals,
+  symbol,
+  shown,
+  onPosted,
+}: {
+  form: SendForm;
+  decimals: number;
+  symbol: string;
+  shown: string;
+  onPosted: () => void;
+}) {
+  const { address } = useIdentity();
   const { hasAgentId } = useHasAgentId(address);
   const approveTx = useBountyActions();
   const postTx = useBountyActions();
@@ -49,10 +175,9 @@ export function SealSteps({
   const [allowance = 0n, balance = 0n] = data ?? [];
 
   const amount = form.amount;
-  const shown = amount ? formatAmount(amount, decimals) : "—";
   const approved = !!amount && allowance >= amount;
   const enough = !!amount && balance >= amount;
-  const blocked = !address || !hasAgentId || !form.ready;
+  const blocked = !hasAgentId || !form.ready;
 
   const post = async () => {
     if (!amount) return;
@@ -87,21 +212,12 @@ export function SealSteps({
   }
 
   return (
-    <div className={styles.steps}>
-      {!address && <p className={styles.note}>Connect a wallet with an Agent ID to send a job.</p>}
-      {address && amount && !enough && (
+    <>
+      {amount && !enough && (
         <p className={styles.error}>
           This wallet holds {formatAmount(balance, decimals)} {symbol}, less than the reward.
         </p>
       )}
-      {form.problems.length > 0 && address && (
-        <ul className={styles.problems}>
-          {form.problems.map((p) => (
-            <li key={p}>{p}</li>
-          ))}
-        </ul>
-      )}
-
       <ol className={styles.stepList}>
         <li className={styles.step}>
           <span className={styles.stepText}>
@@ -133,7 +249,6 @@ export function SealSteps({
           </Button>
         </li>
       </ol>
-
       <TxStatus phase={approveTx.phase} error={approveTx.error} hash={approveTx.hash} />
       {pinError && (
         <p role="alert" className={styles.error}>
@@ -141,10 +256,6 @@ export function SealSteps({
         </p>
       )}
       <TxStatus phase={postTx.phase} error={postTx.error} hash={postTx.hash} />
-      <p className={`mono ${styles.note}`}>
-        Your wallet asks before each step. The contract is unaudited: only seal what you’re prepared
-        to lose.
-      </p>
-    </div>
+    </>
   );
 }

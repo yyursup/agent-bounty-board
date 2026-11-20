@@ -2,9 +2,11 @@ import { bsc, bscTestnet } from "@/lib/contracts/chain";
 import { createConfig, http, injected } from "wagmi";
 
 import { env } from "@/lib/config/env";
+import { pickBinanceFirstProvider } from "@/lib/wallet/binanceProvider";
 
 /**
- * Injected wallets only (Binance Wallet extension or in-app browser, and other browser wallets).
+ * Injected wallets only, Binance Wallet first (its in-app browser and extension), then any other
+ * browser wallet.
  * No QR or pairing-code connectors: the hackathon rules forbid web-based QR or pairing-code login
  * for Agentic Wallet.
  *
@@ -12,7 +14,14 @@ import { env } from "@/lib/config/env";
  */
 export const wagmiConfig = createConfig({
   chains: env.chainId === 56 ? [bsc, bscTestnet] : [bscTestnet, bsc],
-  connectors: [injected()],
+  connectors: [
+    injected({
+      target: () => {
+        const provider = pickBinanceFirstProvider();
+        return provider ? { id: "binanceFirst", name: "Binance Wallet", provider } : undefined;
+      },
+    }),
+  ],
   transports: {
     [bsc.id]: http(env.chainId === 56 ? env.rpcUrl : undefined),
     [bscTestnet.id]: http(env.chainId === 97 ? env.rpcUrl : undefined),

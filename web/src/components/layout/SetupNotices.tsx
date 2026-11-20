@@ -1,14 +1,13 @@
 "use client";
 
-import { useAccount } from "wagmi";
-
 import { Notice } from "@/components/ui/Notice";
 import { useHasAgentId } from "@/hooks/useAgent";
 import { env } from "@/lib/config/env";
+import { useIdentity } from "@/lib/wallet/identity";
 
 /** Tells the visitor what is missing before they try something that would fail. */
 export function SetupNotices() {
-  const { address, isConnected } = useAccount();
+  const { address } = useIdentity();
   const { hasAgentId, isLoading } = useHasAgentId(address);
 
   if (!env.isConfigured) {
@@ -18,10 +17,10 @@ export function SetupNotices() {
       </Notice>
     );
   }
-  if (isConnected && !isLoading && !hasAgentId) {
+  if (address && !isLoading && !hasAgentId) {
     return (
       <Notice>
-        This wallet has no Agent ID, so it can read the board but not send or pick up jobs. Claim
+        This address has no Agent ID, so it can read the board but not send or pick up jobs. Claim
         one in the Binance app: Wallet, then the Agent ID banner.
       </Notice>
     );
