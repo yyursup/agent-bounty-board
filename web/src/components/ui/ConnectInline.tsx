@@ -28,10 +28,7 @@ export function ConnectInline({
       <Button disabled={isPending} onClick={() => connect({ connector: injected })}>
         {isPending ? "Check your wallet…" : "Connect wallet to sign here"}
       </Button>
-      <p className={styles.hint}>
-        Binance Wallet is picked first. The wallet must hold an Agent ID, or the board will refuse
-        it.
-      </p>
+      <p className={styles.hint}>{hint}</p>
       {error && (
         <p role="alert" className={styles.error}>
           {error.message.split("\n")[0]}
