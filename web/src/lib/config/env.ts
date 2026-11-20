@@ -5,8 +5,10 @@ import { getAddress, isAddress, zeroAddress, type Address } from "viem";
  * so Next.js can inline it at build time.
  */
 
+/** Accepts any letter case: a hand-edited address with a broken checksum shouldn't silently vanish. */
 function toAddress(value: string | undefined): Address {
-  return value && isAddress(value) ? getAddress(value) : zeroAddress;
+  const v = value?.trim();
+  return v && isAddress(v, { strict: false }) ? getAddress(v.toLowerCase()) : zeroAddress;
 }
 
 const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? "97");

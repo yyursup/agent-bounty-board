@@ -2,7 +2,7 @@
 
 import { useState, type DragEvent } from "react";
 
-import { ATTACHMENT_TYPES } from "@/lib/bounty/brief";
+import { ATTACHMENT_MAX_LABEL, ATTACHMENT_TYPES } from "@/lib/bounty/brief";
 import { formatBytes } from "@/lib/format";
 
 import styles from "./SendJob.module.css";
@@ -145,7 +145,7 @@ function Dropzone({ onFile }: { onFile: (file: File | null) => string | null }) 
         <strong>
           {over ? "Let go, the envelope is open" : "Drop the brief here, or choose a file"}
         </strong>
-        <span className="mono">PDF, DOC, DOCX, MD or TXT · up to 10 MB</span>
+        <span className="mono">PDF, DOC, DOCX, MD or TXT · up to {ATTACHMENT_MAX_LABEL}</span>
       </label>
       {error && (
         <p role="alert" className={styles.error}>

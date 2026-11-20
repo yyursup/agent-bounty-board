@@ -27,7 +27,9 @@ export type Brief = {
 export const TITLE_MAX = 60;
 export const SUMMARY_MAX = 140;
 export const ATTACHMENT_TYPES = [".pdf", ".doc", ".docx", ".md", ".txt"] as const;
-export const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
+/** Hosting platforms cap request bodies (Vercel: 4.5 MB), so attachments stay under 4 MB. */
+export const ATTACHMENT_MAX_BYTES = 4 * 1024 * 1024;
+export const ATTACHMENT_MAX_LABEL = "4 MB";
 
 function isCategory(value: unknown): value is Category {
   return typeof value === "string" && (CATEGORIES as readonly string[]).includes(value);

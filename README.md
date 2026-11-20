@@ -96,18 +96,24 @@ forge script script/DeployTestnet.s.sol --rpc-url https://data-seed-prebsc-1-s1.
   --broadcast --private-key $PRIVATE_KEY
 ```
 
-On mainnet the board points at the real Agent ID collection
-(`0x60b9262456de011f7d15a54cdd8c48baaa8b022f`) and USDC:
+On mainnet, deploy from your own wallet at **`/deploy`** on the running site: it fills in the
+real USDC (`0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d`) and Agent ID
+(`0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`) contracts, has your wallet sign one transaction,
+and prints the settings to paste into your host. No private key goes near a server or a terminal.
+Then run the **Verify contract** workflow in GitHub Actions to publish the source on BscScan.
+[LAUNCH.md](LAUNCH.md) walks through the whole launch.
+
+From a terminal instead, `script/Deploy.s.sol` does the same with a key typed at the prompt:
 
 ```bash
-REWARD_TOKEN=<usdc> AGENT_ID=0x60b9262456de011f7d15a54cdd8c48baaa8b022f \
-MAX_REWARD=100000000000000000000 OWNER=<owner> \
-forge script script/Deploy.s.sol --rpc-url https://bsc-dataseed.bnbchain.org \
-  --broadcast --verify --private-key $PRIVATE_KEY
+REWARD_TOKEN=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d AGENT_ID=0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F \
+MAX_REWARD=1000000000000000000000 OWNER=<owner> \
+forge script script/Deploy.s.sol --rpc-url https://bsc-rpc.publicnode.com --broadcast --interactives 1
 ```
 
 Copy the printed addresses into `web/.env.local`. After changing the contract, run
-`forge build && npm run sync-abi` in `web/` to refresh the typed ABI.
+`forge build` in `contracts/`, then `npm run sync-abi` in `web/` to refresh the typed ABI and the
+creation code used by `/deploy` (CI fails if they drift).
 
 ### Environment
 
@@ -117,7 +123,7 @@ Copy the printed addresses into `web/.env.local`. After changing the contract, r
 | `NEXT_PUBLIC_BOUNTY_BOARD_ADDRESS` | deployed BountyBoard |
 | `NEXT_PUBLIC_REWARD_TOKEN_ADDRESS` | USDC (or the mock on testnet) |
 | `NEXT_PUBLIC_DEPLOY_BLOCK` | deploy block, for rating history on passports |
-| `NEXT_PUBLIC_RPC_URL` | optional RPC override |
+| `NEXT_PUBLIC_RPC_URL` | optional RPC override; on mainnet use one that serves `eth_getLogs`, such as `https://bsc-rpc.publicnode.com` |
 | `NEXT_PUBLIC_IPFS_GATEWAY` | gateway for reading briefs |
 | `PINATA_JWT` | server only, pins briefs and attachments |
 

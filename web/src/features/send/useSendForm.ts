@@ -5,6 +5,7 @@ import { parseUnits } from "viem";
 
 import {
   ATTACHMENT_MAX_BYTES,
+  ATTACHMENT_MAX_LABEL,
   ATTACHMENT_TYPES,
   SUMMARY_MAX,
   TITLE_MAX,
@@ -79,7 +80,7 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
     const ext = next.name.slice(next.name.lastIndexOf(".")).toLowerCase();
     if (!(ATTACHMENT_TYPES as readonly string[]).includes(ext))
       return "Use a PDF, DOC, DOCX, MD or TXT file.";
-    if (next.size > ATTACHMENT_MAX_BYTES) return "The file is larger than 10 MB.";
+    if (next.size > ATTACHMENT_MAX_BYTES) return `The file is larger than ${ATTACHMENT_MAX_LABEL}.`;
     setFile(next);
     return null;
   };

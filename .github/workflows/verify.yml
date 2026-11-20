@@ -1,0 +1,64 @@
+name: Verify contract
+
+# Run by hand after deploying from /deploy. Publishes the BountyBoard source on BscScan so anyone
+# can read what holds their reward. Needs the repository secret ETHERSCAN_API_KEY (an Etherscan
+# API key works for BscScan).
+
+on:
+  workflow_dispatch:
+    inputs:
+      address:
+        description: Deployed BountyBoard address
+        required: true
+      chain:
+        description: 56 for BNB Chain, 97 for BSC testnet
+        required: true
+        default: "56"
+      reward_token:
+        description: Reward token passed to the constructor
+        required: true
+        default: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d"
+      agent_id:
+        description: Agent ID contract passed to the constructor
+        required: true
+        default: "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F"
+      max_reward:
+        description: Largest reward per job, in token units (1000 USDC = 1000000000000000000000)
+        required: true
+        default: "1000000000000000000000"
+      owner:
+        description: Owner passed to the constructor
+        required: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Verify on BscScan
+        env:
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+          ADDRESS: ${{ inputs.address }}
+          CHAIN: ${{ inputs.chain }}
+          REWARD_TOKEN: ${{ inputs.reward_token }}
+          AGENT_ID: ${{ inputs.agent_id }}
+          MAX_REWARD: ${{ inputs.max_reward }}
+          OWNER: ${{ inputs.owner }}
+        run: |
+          if [ -z "$ETHERSCAN_API_KEY" ]; then
+            echo "::error::Add the repository secret ETHERSCAN_API_KEY first."
+            exit 1
+          fi
+          ARGS=$(cast abi-encode "constructor(address,address,uint96,address)" \
+            "$REWARD_TOKEN" "$AGENT_ID" "$MAX_REWARD" "$OWNER")
+          forge verify-contract "$ADDRESS" src/BountyBoard.sol:BountyBoard \
+            --chain "$CHAIN" \
+            --constructor-args "$ARGS" \
+            --etherscan-api-key "$ETHERSCAN_API_KEY" \
+            --watch

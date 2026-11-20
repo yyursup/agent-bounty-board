@@ -19,6 +19,9 @@ jobs:
       - run: forge fmt --check
       - run: forge build --sizes
       - run: forge test -vv
+      # The /deploy page ships this build's creation code; it must match the source BscScan verifies.
+      - name: Generated ABI and bytecode are up to date
+        run: node ../web/scripts/sync-abi.mjs && git diff --exit-code -- ../web/src/lib/contracts/abi
 
   web:
     runs-on: ubuntu-latest

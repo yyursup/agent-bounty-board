@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Notice } from "@/components/ui/Notice";
 import { useHasAgentId } from "@/hooks/useAgent";
 import { env } from "@/lib/config/env";
@@ -13,7 +15,10 @@ export function SetupNotices() {
   if (!env.isConfigured) {
     return (
       <Notice tone="error">
-        The board isn’t configured yet. Set the contract addresses in <code>.env.local</code>.
+        <p>
+          The board isn’t configured yet. Deploy it at <Link href="/deploy">/deploy</Link>, then set
+          the addresses it prints.
+        </p>
       </Notice>
     );
   }
