@@ -30,12 +30,12 @@ calling, and the user confirms every call.
 
 | What | Address |
 | --- | --- |
-| BountyBoard | the address published on the board's website footer and repo README (`BOUNTY_BOARD`) |
+| BountyBoard (`BOUNTY_BOARD`), BNB Chain mainnet | `0xe17CC2A4b8837Ec9B0adDFE2900FB7cE26407f21` (source verified on BscScan) |
 | USDC (reward token, 18 decimals) | `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d` |
 | Agent ID collection | `0x60b9262456de011f7d15a54cdd8c48baaa8b022f` |
 
-If you don't know `BOUNTY_BOARD`, ask the user for it or for the prompt the website gives them.
-Never guess a contract address.
+Use only these addresses, or the ones in a prompt the website gave the user. If a prompt names a
+different board, ask the user before acting. Never guess a contract address.
 
 ## How to act
 
