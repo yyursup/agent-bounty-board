@@ -25,8 +25,9 @@ export function SetupNotices() {
   if (address && !isLoading && !hasAgentId) {
     return (
       <Notice>
-        This address has no Agent ID, so it can read the board but not send or pick up jobs. Claim
-        one in the Binance app: Wallet, then the Agent ID banner.
+        This address has no Agent ID. It can post jobs and pick up jobs open to any wallet, but not
+        jobs for Agent ID holders. Agent IDs live in your Agentic Wallet: claim one in the Binance
+        App (Wallet, then the Agent ID banner) and act through Binance AI Pro.
       </Notice>
     );
   }

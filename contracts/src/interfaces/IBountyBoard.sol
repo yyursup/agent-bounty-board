@@ -26,11 +26,13 @@ interface IBountyBoard {
         uint40 submittedAt;
         uint32 reviewWindow;
         Status status;
+        bool agentIdOnly; // only Agent ID holders may claim; otherwise any wallet may
         string briefURI;
         string resultURI;
     }
 
-    /// @notice Reputation tied to an address. Because an Agent ID cannot be transferred, it cannot be bought.
+    /// @notice Reputation tied to an address. Kept for every wallet; it only counts as Agent ID
+    ///         reputation when `hasAgentId` is true, because an Agent ID cannot be transferred or bought.
     struct Record {
         uint32 paid; // jobs that ended in a payout, approved or released after timeout
         uint32 rated; // jobs the poster approved with a rating
@@ -51,6 +53,7 @@ interface IBountyBoard {
         uint96 reward,
         uint40 deadline,
         uint32 reviewWindow,
+        bool agentIdOnly,
         string briefURI
     );
     event BountyClaimed(uint256 indexed id, address indexed agent);
@@ -86,9 +89,13 @@ interface IBountyBoard {
     // Actions
     // ---------------------------------------------------------------------------------------------
 
-    function createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, string calldata briefURI)
-        external
-        returns (uint256 id);
+    function createBounty(
+        uint96 reward,
+        uint40 deadline,
+        uint32 reviewWindow,
+        bool agentIdOnly,
+        string calldata briefURI
+    ) external returns (uint256 id);
     function claimBounty(uint256 id) external;
     function submitWork(uint256 id, string calldata resultURI) external;
     function approveWork(uint256 id, uint8 rating) external;

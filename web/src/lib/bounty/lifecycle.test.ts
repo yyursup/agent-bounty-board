@@ -25,6 +25,7 @@ const base: Bounty = {
   submittedAt: 0,
   reviewWindow: 100,
   status: BountyStatus.Open,
+  agentIdOnly: true,
   briefURI: "ipfs://brief",
   resultURI: "",
 };

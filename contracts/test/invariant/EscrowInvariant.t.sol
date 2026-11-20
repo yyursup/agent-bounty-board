@@ -20,7 +20,9 @@ contract BoardHandler is Test {
         actors = actors_;
     }
 
-    function create(uint256 actorSeed, uint96 reward, uint256 offset, uint256 windowSeed) external {
+    function create(uint256 actorSeed, uint96 reward, uint256 offset, uint256 windowSeed, bool agentIdOnly)
+        external
+    {
         address actor = _actor(actorSeed);
         reward = uint96(bound(reward, 1, board.maxReward()));
         uint40 deadline = uint40(block.timestamp + bound(offset, board.MIN_DURATION(), board.MAX_DURATION()));
@@ -28,7 +30,7 @@ contract BoardHandler is Test {
         usdc.mint(actor, reward);
         vm.startPrank(actor);
         usdc.approve(address(board), reward);
-        board.createBounty(reward, deadline, window, "ipfs://brief");
+        board.createBounty(reward, deadline, window, agentIdOnly, "ipfs://brief");
         vm.stopPrank();
     }
 
@@ -120,10 +122,11 @@ contract EscrowInvariantTest is Test {
         MockAgentID ids = new MockAgentID();
         board = new BountyBoard(usdc, ids, 100e18, address(this));
 
-        address[] memory actors = new address[](3);
+        // Three Agent ID holders and one plain wallet, so open and Agent-ID-only jobs both get exercised.
+        address[] memory actors = new address[](4);
         for (uint256 i; i < actors.length; ++i) {
             actors[i] = makeAddr(string.concat("actor", vm.toString(i)));
-            ids.issue(actors[i]);
+            if (i < 3) ids.issue(actors[i]);
         }
 
         handler = new BoardHandler(board, usdc, actors);

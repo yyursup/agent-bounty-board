@@ -11,7 +11,8 @@ import {IAgentID} from "./interfaces/IAgentID.sol";
 import {IBountyBoard} from "./interfaces/IBountyBoard.sol";
 
 /// @title Agent Bounty Board
-/// @notice Small jobs with the reward held in escrow. Posters and agents both need an Agent ID.
+/// @notice Small jobs with the reward held in escrow. Anyone can post; each job says whether only
+///         Agent ID holders may pick it up (the default in the app) or any wallet may.
 ///
 ///         Escrowed funds leave the contract by exactly three routes:
 ///           1. the poster approves the work            -> paid to the agent
@@ -35,7 +36,7 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
 
     /// @notice The token rewards are paid in (USDC on BNB Chain).
     IERC20 public immutable rewardToken;
-    /// @notice The Agent ID collection that gates posting and claiming.
+    /// @notice The Agent ID collection that gates claiming on Agent-ID-only jobs.
     IAgentID public immutable agentId;
     /// @notice Upper bound for a single reward while the contract is unaudited.
     uint96 public immutable maxReward;
@@ -60,24 +61,20 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         maxReward = maxReward_;
     }
 
-    modifier onlyAgentIdHolder() {
-        _requireAgentId(msg.sender);
-        _;
-    }
-
     // ---------------------------------------------------------------------------------------------
     // Poster actions
     // ---------------------------------------------------------------------------------------------
 
     /// @inheritdoc IBountyBoard
-    /// @dev The caller must first approve exactly `reward` for this contract.
-    function createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, string calldata briefURI)
-        external
-        whenNotPaused
-        nonReentrant
-        onlyAgentIdHolder
-        returns (uint256 id)
-    {
+    /// @dev The caller must first approve exactly `reward` for this contract. Posting needs no
+    ///      Agent ID: the poster's money is at stake, not anyone's reputation.
+    function createBounty(
+        uint96 reward,
+        uint40 deadline,
+        uint32 reviewWindow,
+        bool agentIdOnly,
+        string calldata briefURI
+    ) external whenNotPaused nonReentrant returns (uint256 id) {
         if (reward == 0 || reward > maxReward) revert InvalidReward(reward);
         if (deadline < block.timestamp + MIN_DURATION || deadline > block.timestamp + MAX_DURATION) {
             revert InvalidDeadline(deadline);
@@ -94,9 +91,10 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         b.deadline = deadline;
         b.reviewWindow = reviewWindow;
         b.status = Status.Open;
+        b.agentIdOnly = agentIdOnly;
         b.briefURI = briefURI;
 
-        emit BountyCreated(id, msg.sender, reward, deadline, reviewWindow, briefURI);
+        emit BountyCreated(id, msg.sender, reward, deadline, reviewWindow, agentIdOnly, briefURI);
 
         _pullExact(msg.sender, reward);
     }
@@ -161,9 +159,11 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     // ---------------------------------------------------------------------------------------------
 
     /// @inheritdoc IBountyBoard
-    function claimBounty(uint256 id) external onlyAgentIdHolder {
+    /// @dev The Agent ID check is made at claim time, against the wallet that will do the work.
+    function claimBounty(uint256 id) external {
         Bounty storage b = _existing(id);
         _requireStatus(id, b, Status.Open);
+        if (b.agentIdOnly) _requireAgentId(msg.sender);
         if (b.poster == msg.sender) revert CannotClaimOwnBounty(id);
         if (block.timestamp >= b.deadline) revert DeadlinePassed(id);
 

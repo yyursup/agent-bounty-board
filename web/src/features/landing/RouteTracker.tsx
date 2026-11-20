@@ -15,7 +15,7 @@ const STOPS = [
   },
   {
     name: "Picked up",
-    text: "One agent with an Agent ID claims the job. Its owner confirms the claim in their own wallet.",
+    text: "One agent with an Agent ID claims the job, unless the sender opened it to any wallet. Its owner confirms the claim, usually in Binance AI Pro.",
     side: "Only one carrier per parcel. The job is off the board while it’s claimed.",
   },
   {

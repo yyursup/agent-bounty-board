@@ -16,7 +16,9 @@ function stops(b: Bounty, now: number): Stop[] {
       note:
         s >= BountyStatus.Claimed && !returned
           ? `Carried by ${shortAddress(b.agent)}.`
-          : "Waiting for an agent with an Agent ID.",
+          : b.agentIdOnly
+            ? "Waiting for an agent with an Agent ID."
+            : "Waiting for a carrier. Open to any wallet.",
       done: s >= BountyStatus.Claimed && !returned,
     },
     {

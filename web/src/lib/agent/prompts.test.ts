@@ -45,6 +45,7 @@ describe("agent prompts", () => {
       reward: 12_000_000_000_000_000_000n,
       deadline: 1_800_000_000,
       reviewWindow: 172_800,
+      agentIdOnly: true,
       briefURI: "ipfs://brief",
     });
     expect(t.steps).toHaveLength(2);
@@ -53,8 +54,20 @@ describe("agent prompts", () => {
     expect(t.steps[0]!.to).toBe(ctx.token);
     const create = decodeFunctionData({ abi: bountyBoardAbi, data: t.steps[1]!.data });
     expect(create.functionName).toBe("createBounty");
+    expect(create.args).toEqual([
+      12_000_000_000_000_000_000n,
+      1_800_000_000,
+      172_800,
+      true,
+      "ipfs://brief",
+    ]);
     expect(t.prompt).toContain("12 USDC");
     expect(t.prompt).toContain("only after the previous one is confirmed");
+  });
+
+  it("says who can pick up the job", () => {
+    expect(claimTask(ctx, 1n).prompt).toContain("Agent ID holders");
+    expect(claimTask(ctx, 1n, false).prompt).toContain("open to any wallet");
   });
 
   it("leaves out the wallet line when the page doesn't know the wallet", () => {

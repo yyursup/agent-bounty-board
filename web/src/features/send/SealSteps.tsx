@@ -8,7 +8,6 @@ import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
 import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
-import { useHasAgentId } from "@/hooks/useAgent";
 import { useBountyActions } from "@/hooks/useBountyActions";
 import { usePromptContext } from "@/hooks/usePromptContext";
 import { postTask } from "@/lib/agent/prompts";
@@ -21,10 +20,9 @@ import styles from "./SendJob.module.css";
 import type { SendForm } from "./useSendForm";
 
 /**
- * Two ways to seal a job, chosen with the Sign here / Binance AI Pro switch, both in two steps
- * (approve exactly the reward, then post):
- *  - with a connected wallet, right here;
- *  - with Binance AI Pro: the brief is pinned first, then a prompt carries both calls.
+ * Two ways to seal a job, both in two steps (approve exactly the reward, then post):
+ *  - with Binance AI Pro (the main way): the brief is pinned first, then a prompt carries both calls;
+ *  - with a browser wallet, right here. Posting needs no Agent ID.
  */
 export function SealSteps({
   form,
@@ -38,17 +36,11 @@ export function SealSteps({
   onPosted: () => void;
 }) {
   const who = useIdentity();
-  const { hasAgentId } = useHasAgentId(who.address);
   const amount = form.amount;
   const shown = amount ? formatAmount(amount, decimals) : "—";
 
   return (
     <div className={styles.steps}>
-      {who.address && !hasAgentId && (
-        <p className={styles.error}>
-          This address has no Agent ID, so the board won’t accept a job from it.
-        </p>
-      )}
       {form.problems.length > 0 && (
         <ul className={styles.problems}>
           {form.problems.map((p) => (
@@ -119,6 +111,7 @@ function AgentSeal({ form }: { form: SendForm }) {
           reward: form.amount,
           deadline: form.deadlineUnix,
           reviewWindow: form.reviewSeconds,
+          agentIdOnly: form.fields.agentIdOnly,
           briefURI: current,
         })}
       />
@@ -158,7 +151,6 @@ function WalletSeal({
   onPosted: () => void;
 }) {
   const { address } = useIdentity();
-  const { hasAgentId } = useHasAgentId(address);
   const approveTx = useBountyActions();
   const postTx = useBountyActions();
   const [pinning, setPinning] = useState(false);
@@ -178,7 +170,7 @@ function WalletSeal({
   const amount = form.amount;
   const approved = !!amount && allowance >= amount;
   const enough = !!amount && balance >= amount;
-  const blocked = !hasAgentId || !form.ready;
+  const blocked = !form.ready;
 
   const post = async () => {
     if (!amount) return;
@@ -197,7 +189,14 @@ function WalletSeal({
     } finally {
       setPinning(false);
     }
-    if (await postTx.createBounty(amount, form.deadlineUnix, form.reviewSeconds, briefUri)) {
+    const job = {
+      reward: amount,
+      deadline: form.deadlineUnix,
+      reviewWindow: form.reviewSeconds,
+      agentIdOnly: form.fields.agentIdOnly,
+      briefURI: briefUri,
+    };
+    if (await postTx.createBounty(job)) {
       setPosted(true);
       onPosted();
     }

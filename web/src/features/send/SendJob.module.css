@@ -151,6 +151,7 @@ textarea.input {
 }
 .segment {
   display: flex;
+  width: fit-content;
   gap: 4px;
   padding: 4px;
   border-radius: var(--radius-pill);
@@ -451,4 +452,9 @@ textarea.input {
   40% {
     transform: scaleX(1.04) scaleY(0.92);
   }
+}
+.hint {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
 }

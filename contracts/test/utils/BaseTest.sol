@@ -48,7 +48,7 @@ abstract contract BaseTest is Test {
 
     function _post() internal returns (uint256 id) {
         vm.prank(poster);
-        id = board.createBounty(REWARD, _deadline(), REVIEW, BRIEF);
+        id = board.createBounty(REWARD, _deadline(), REVIEW, true, BRIEF);
     }
 
     function _postAndClaim() internal returns (uint256 id) {

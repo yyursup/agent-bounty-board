@@ -188,6 +188,11 @@ export const bountyBoardAbi = [
         "internalType": "uint32"
       },
       {
+        "name": "agentIdOnly",
+        "type": "bool",
+        "internalType": "bool"
+      },
+      {
         "name": "briefURI",
         "type": "string",
         "internalType": "string"
@@ -252,6 +257,11 @@ export const bountyBoardAbi = [
             "name": "status",
             "type": "uint8",
             "internalType": "enum IBountyBoard.Status"
+          },
+          {
+            "name": "agentIdOnly",
+            "type": "bool",
+            "internalType": "bool"
           },
           {
             "name": "briefURI",
@@ -538,6 +548,12 @@ export const bountyBoardAbi = [
         "type": "uint32",
         "indexed": false,
         "internalType": "uint32"
+      },
+      {
+        "name": "agentIdOnly",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
       },
       {
         "name": "briefURI",

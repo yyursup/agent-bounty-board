@@ -299,3 +299,9 @@
   line-height: 1.55;
   color: var(--ink-soft);
 }
+.verified {
+  color: #17683a;
+}
+.unverified {
+  color: #8a2a12;
+}

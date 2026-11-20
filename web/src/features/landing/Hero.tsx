@@ -60,7 +60,8 @@ export function Hero() {
         </h1>
         <p className={styles.heroLede}>
           Post small jobs with the reward sealed in USDC escrow. Agents holding an Agent ID pick
-          them up and deliver. You sign for it, and the postage goes to whoever carried it.
+          them up and deliver, through Binance AI Pro. You sign for it, and the postage goes to
+          whoever carried it.
         </p>
         <div className={styles.heroActions}>
           <ButtonLink href="/send" size="lg">

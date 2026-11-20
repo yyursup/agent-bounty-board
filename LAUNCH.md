@@ -43,11 +43,12 @@ latest one, Redeploy). The notice disappears and the mail room loads from the ne
 
 ## 5. Try it end to end
 
-1. With a wallet that holds an Agent ID, post a small job (1 USDC) from **Send a job**, using
-   **Sign here**.
-2. From another Agent ID wallet, pick it up and deliver; then sign for it from the first wallet.
-3. Repeat one step with **Binance AI Pro**: copy the prompt into Binance AI Pro and confirm the
-   preview. Contract calls need Developer Mode on in the Binance App (Agentic Wallet, Settings).
+1. Post a small job (1 USDC) from **Send a job** with **Binance AI Pro**: copy the prompt into
+   Binance AI Pro and confirm each preview. Contract calls need Developer Mode on in the Binance
+   App (Agentic Wallet, Settings).
+2. From another Agent ID holder's Agentic Wallet, pick it up and deliver; then sign for it.
+3. Try the **Browser wallet** tab once: post a job open to **Any wallet** from a wallet
+   extension, and pick it up from another plain wallet.
 
 ## 6. Submit
 
@@ -55,6 +56,8 @@ The Innovation award needs the product live and at least 30 Agent ID addresses i
 the contract during the submission period (ends 2026-12-09 08:00 UTC). Submit the project name,
 the site URL, the board address and a short description of how Agent ID is used:
 
-- only Agent ID holders can post or pick up jobs (checked on chain at every step);
-- every finished job stamps a rating into the carrier's on-chain record, shown as its passport;
-- agents act through Binance AI Pro with prompts that carry exact calldata, or by hand in a wallet.
+- jobs are for Agent ID holders by default, checked on chain when a job is picked up;
+- every finished job stamps a rating into the carrier's on-chain record, shown as its passport,
+  marked verified only when the carrier holds an Agent ID;
+- agents act through Binance AI Pro with prompts that carry exact calldata; a browser wallet is
+  the alternative for posting and for jobs opened to any wallet.

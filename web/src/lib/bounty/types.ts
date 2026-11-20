@@ -23,6 +23,8 @@ export type Bounty = {
   /** Seconds. */
   reviewWindow: number;
   status: BountyStatus;
+  /** Only Agent ID holders may pick it up; otherwise any wallet may. */
+  agentIdOnly: boolean;
   briefURI: string;
   resultURI: string;
 };
@@ -47,6 +49,7 @@ type RawBounty = {
   submittedAt: number;
   reviewWindow: number;
   status: number;
+  agentIdOnly: boolean;
   briefURI: string;
   resultURI: string;
 };

@@ -37,7 +37,7 @@ const SIGNATURES = {
   releaseAfterTimeout: "releaseAfterTimeout(uint256 id)",
   cancelBounty: "cancelBounty(uint256 id)",
   createBounty:
-    "createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, string briefURI)",
+    "createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, bool agentIdOnly, string briefURI)",
 } as const;
 
 type BoardCall =
@@ -47,7 +47,7 @@ type BoardCall =
     }
   | { functionName: "submitWork"; args: readonly [bigint, string] }
   | { functionName: "approveWork"; args: readonly [bigint, number] }
-  | { functionName: "createBounty"; args: readonly [bigint, number, number, string] };
+  | { functionName: "createBounty"; args: readonly [bigint, number, number, boolean, string] };
 
 function boardStep(ctx: PromptContext, summary: string, call: BoardCall, args: string): AgentStep {
   return {
@@ -104,7 +104,7 @@ function task(ctx: PromptContext, goal: string, steps: AgentStep[], closing?: st
 
 const ref = (id: bigint) => `#${id}`;
 
-export function claimTask(ctx: PromptContext, id: bigint): AgentTask {
+export function claimTask(ctx: PromptContext, id: bigint, agentIdOnly = true): AgentTask {
   return task(
     ctx,
     `pick up job ${ref(id)}`,
@@ -116,7 +116,9 @@ export function claimTask(ctx: PromptContext, id: bigint): AgentTask {
         `id = ${id}`,
       ),
     ],
-    "My wallet needs an Agent ID, and I can't pick up a job I posted myself.",
+    agentIdOnly
+      ? "This job is for Agent ID holders: my wallet needs an Agent ID, and I can't pick up a job I posted myself."
+      : "This job is open to any wallet. I can't pick up a job I posted myself.",
   );
 }
 
@@ -187,7 +189,14 @@ export function refundTask(ctx: PromptContext, id: bigint): AgentTask {
 
 export function postTask(
   ctx: PromptContext,
-  job: { title: string; reward: bigint; deadline: number; reviewWindow: number; briefURI: string },
+  job: {
+    title: string;
+    reward: bigint;
+    deadline: number;
+    reviewWindow: number;
+    agentIdOnly: boolean;
+    briefURI: string;
+  },
 ): AgentTask {
   const human = `${formatUnits(job.reward, ctx.decimals)} ${ctx.symbol}`;
   const approve: AgentStep = {
@@ -206,14 +215,14 @@ export function postTask(
     `Post the job "${job.title}" and lock ${human} in escrow`,
     {
       functionName: "createBounty",
-      args: [job.reward, job.deadline, job.reviewWindow, job.briefURI],
+      args: [job.reward, job.deadline, job.reviewWindow, job.agentIdOnly, job.briefURI],
     },
-    `reward = ${job.reward} (${human}), deadline = ${job.deadline} (${new Date(job.deadline * 1000).toISOString()}), reviewWindow = ${job.reviewWindow} seconds, briefURI = "${job.briefURI}"`,
+    `reward = ${job.reward} (${human}), deadline = ${job.deadline} (${new Date(job.deadline * 1000).toISOString()}), reviewWindow = ${job.reviewWindow} seconds, agentIdOnly = ${job.agentIdOnly} (${job.agentIdOnly ? "only Agent ID holders can pick it up" : "any wallet can pick it up"}), briefURI = "${job.briefURI}"`,
   );
   return task(
     ctx,
     `post a job with a ${human} reward`,
     [approve, create],
-    "My wallet needs an Agent ID and enough " + ctx.symbol + " for the reward.",
+    `My wallet needs enough ${ctx.symbol} on ${ctx.chainName} for the reward, plus a little gas.`,
   );
 }

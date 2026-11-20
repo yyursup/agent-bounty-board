@@ -5,8 +5,8 @@
 
 | Function | Caller | Effect |
 | --- | --- | --- |
-| `createBounty(reward, deadline, reviewWindow, briefURI)` | Agent ID holder | pulls exactly `reward` into escrow |
-| `claimBounty(id)` | Agent ID holder, not the poster | takes an open bounty before the deadline |
+| `createBounty(reward, deadline, reviewWindow, agentIdOnly, briefURI)` | anyone | pulls exactly `reward` into escrow; `agentIdOnly` decides who may claim |
+| `claimBounty(id)` | anyone but the poster; an Agent ID holder when `agentIdOnly` | takes an open bounty before the deadline |
 | `submitWork(id, resultURI)` | the agent | files the result, starts the review window |
 | `approveWork(id, rating)` | the poster | pays the agent, records a 1–5 rating |
 | `rejectWork(id)` | the poster, inside the window | reopens the bounty, logs a rejection |

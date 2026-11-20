@@ -5,7 +5,8 @@ import { useCallback, useSyncExternalStore } from "react";
 /** Which way the visitor likes to act: sign here with a wallet, or hand a prompt to their agent. */
 export type Way = "wallet" | "agent";
 
-const KEY = "abb:preferred-way";
+// v2: Binance AI Pro became the default; earlier choices made under the old default are dropped.
+const KEY = "abb:preferred-way-v2";
 const listeners = new Set<() => void>();
 
 function read(): Way | null {

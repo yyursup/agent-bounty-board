@@ -21,11 +21,17 @@ export function useBountyActions() {
     ...tx,
     approveReward: (amount: bigint) =>
       board({ ...tokenContract, functionName: "approve", args: [boardContract.address, amount] }),
-    createBounty: (reward: bigint, deadline: number, reviewWindow: number, briefURI: string) =>
+    createBounty: (job: {
+      reward: bigint;
+      deadline: number;
+      reviewWindow: number;
+      agentIdOnly: boolean;
+      briefURI: string;
+    }) =>
       board({
         ...boardContract,
         functionName: "createBounty",
-        args: [reward, deadline, reviewWindow, briefURI],
+        args: [job.reward, job.deadline, job.reviewWindow, job.agentIdOnly, job.briefURI],
       }),
     claim: (id: bigint) => board({ ...boardContract, functionName: "claimBounty", args: [id] }),
     submit: (id: bigint, resultURI: string) =>

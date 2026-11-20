@@ -10,8 +10,9 @@ import { ConnectInline } from "./ConnectInline";
 import styles from "./TwoWays.module.css";
 
 /**
- * One action, two ways to do it: sign here with a browser wallet, or copy a prompt for Binance AI
- * Pro. The choice is remembered, so people who prefer one way don't have to switch every time.
+ * One action, two ways to do it. Binance AI Pro comes first and is the default: Agent IDs live in
+ * Agentic Wallets, which only an agent can drive. A browser wallet is the alternative. The choice
+ * is remembered, so people who prefer one way don't have to switch every time.
  */
 export function TwoWays({
   canSign,
@@ -22,7 +23,7 @@ export function TwoWays({
 }: {
   /** True when a wallet is connected on this page. */
   canSign: boolean;
-  /** What "Sign here" shows once a wallet is connected. */
+  /** What the browser-wallet tab shows once a wallet is connected. */
   manual: ReactNode;
   /** The prompt, or null while the visitor still has to fill something in. */
   task?: AgentTask | null;
@@ -31,20 +32,11 @@ export function TwoWays({
   /** Shown on the agent side while `task` is null. */
   agentPending?: ReactNode;
 }) {
-  const [way, setWay] = usePreferredWay(canSign ? "wallet" : "agent");
+  const [way, setWay] = usePreferredWay("agent");
 
   return (
     <div className={styles.wrap}>
       <div role="tablist" aria-label="How to do it" className={styles.tabs}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={way === "wallet"}
-          onClick={() => setWay("wallet")}
-        >
-          <WalletIcon />
-          Sign here
-        </button>
         <button
           type="button"
           role="tab"
@@ -53,6 +45,15 @@ export function TwoWays({
         >
           <AgentIcon />
           Binance AI Pro
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={way === "wallet"}
+          onClick={() => setWay("wallet")}
+        >
+          <WalletIcon />
+          Browser wallet
         </button>
       </div>
       <div key={way} role="tabpanel" className={styles.panel}>

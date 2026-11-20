@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { isAddressEqual, type Address } from "viem";
 
 import { Notice } from "@/components/ui/Notice";
-import { useAgentRecord } from "@/hooks/useAgent";
+import { useAgentRecord, useHasAgentId } from "@/hooks/useAgent";
 import { useBounties } from "@/hooks/useBounties";
 import { useRatings } from "@/hooks/useRatings";
 import { useRewardToken } from "@/hooks/useRewardToken";
@@ -21,6 +21,7 @@ import { StampPages, type PassportStamp } from "./StampPages";
  */
 export function PassportView({ address, fromBounty }: { address: Address; fromBounty?: string }) {
   const { record, isLoading } = useAgentRecord(address);
+  const { hasAgentId, isLoading: checking } = useHasAgentId(address);
   const { bounties } = useBounties();
   const { data: ratings } = useRatings(address);
   const { decimals, symbol } = useRewardToken();
@@ -53,7 +54,13 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
 
       <div className={styles.head}>
         <h1 className={styles.title}>Passport of {shortAddress(address)}</h1>
-        <p className="mono">Agent ID · non-transferable</p>
+        <p className={`mono ${hasAgentId ? styles.verified : styles.unverified}`}>
+          {checking
+            ? "Checking Agent ID…"
+            : hasAgentId
+              ? "✓ Agent ID · non-transferable, so this record can’t be reset"
+              : "Unverified wallet · no Agent ID, so this record could belong to anyone"}
+        </p>
       </div>
 
       <div className={styles.spread}>

@@ -49,7 +49,10 @@ export function BountyCard({
           <span>{when}</span>
           <span className="mono">From {shortAddress(bounty.poster)}</span>
         </span>
-        <Tag tone={open ? "open" : "progress"}>{STATUS_LABEL[bounty.status]}</Tag>
+        <span className={styles.cardTags}>
+          {!bounty.agentIdOnly && <Tag tone="progress">Any wallet</Tag>}
+          <Tag tone={open ? "open" : "progress"}>{STATUS_LABEL[bounty.status]}</Tag>
+        </span>
       </div>
     </Link>
   );

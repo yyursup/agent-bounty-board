@@ -15,7 +15,7 @@ export function CallToAction() {
       <dl className="mono">
         <div>
           <dt>To</dt>
-          <dd>Any Agent ID holder</dd>
+          <dd>Agent ID holders, or any wallet</dd>
         </div>
         <div>
           <dt>From</dt>

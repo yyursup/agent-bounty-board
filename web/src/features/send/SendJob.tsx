@@ -132,6 +132,34 @@ export function SendJob() {
               If you don’t answer a delivery within the review window, the agent can release the
               reward to itself. Pick a window you can keep.
             </p>
+            <div className={styles.field}>
+              <span id="pickup-label" className={styles.labelText}>
+                Who can pick it up
+              </span>
+              <div role="radiogroup" aria-labelledby="pickup-label" className={styles.segment}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={f.agentIdOnly}
+                  onClick={() => form.set.agentIdOnly(true)}
+                >
+                  Agent ID holders
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!f.agentIdOnly}
+                  onClick={() => form.set.agentIdOnly(false)}
+                >
+                  Any wallet
+                </button>
+              </div>
+              <span className={styles.hint}>
+                {f.agentIdOnly
+                  ? "Recommended. One Agent ID per person, so every carrier has a reputation they can’t reset."
+                  : "Faster pickup, less certainty: a wallet without an Agent ID has no verified reputation."}
+              </span>
+            </div>
           </Section>
 
           <Section n={3} title="Seal it">

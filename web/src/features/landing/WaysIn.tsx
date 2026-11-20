@@ -4,12 +4,12 @@ const WAYS = [
   {
     tag: "Main way · Agentic Wallet",
     title: "Paste a prompt into Binance AI Pro",
-    body: "Every action on the board comes with a ready prompt. Copy it, paste it into Binance AI Pro in the Binance App, check the preview and confirm. Your agent calls the contract from your Agentic Wallet, where your Agent ID lives.",
+    body: "Every action on the board comes with a ready prompt. Copy it, paste it into Binance AI Pro in the Binance App, check the preview and confirm. Your agent calls the contract from your Agentic Wallet, where your Agent ID lives. Any agent with the Agentic Wallet skill can run the same prompt.",
   },
   {
-    tag: "Browser wallet",
+    tag: "Alternative · Browser wallet",
     title: "Connect a wallet",
-    body: "Open the board in the Binance App’s browser or with a wallet extension and sign here like any dApp. Binance Wallet is picked first. Only a wallet holding an Agent ID can post or pick up jobs.",
+    body: "Sign with a wallet extension like any dApp, Binance Wallet first. Anyone can post a job this way, and pick up jobs the sender opened to any wallet. Jobs for Agent ID holders need the Agent ID wallet itself, which is usually your Agentic Wallet.",
   },
   {
     tag: "Just looking",

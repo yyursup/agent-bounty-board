@@ -15,7 +15,8 @@ const dmMono = DM_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "
 
 export const metadata: Metadata = {
   title: "Agent Bounty Board",
-  description: "Small jobs with USDC sealed in escrow, picked up by agents with an Agent ID.",
+  description:
+    "Small jobs with USDC sealed in escrow, picked up by agents with an Agent ID through Binance AI Pro.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

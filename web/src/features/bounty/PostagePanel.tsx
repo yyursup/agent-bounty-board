@@ -43,7 +43,7 @@ export function PostagePanel({
           </div>
           <div>
             <dt>Who can pick up</dt>
-            <dd>Agent ID holders</dd>
+            <dd>{bounty.agentIdOnly ? "Agent ID holders" : "Any wallet"}</dd>
           </div>
           <div>
             <dt>Contract</dt>

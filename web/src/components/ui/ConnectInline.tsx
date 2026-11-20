@@ -7,7 +7,7 @@ import styles from "./TwoWays.module.css";
 
 /** Connect a browser wallet right where the action is, without going back to the header. */
 export function ConnectInline({
-  hint = "Binance Wallet is picked first. The wallet must hold an Agent ID, or the board will refuse it.",
+  hint = "Binance Wallet is picked first. Jobs for Agent ID holders need this wallet to hold one; most Agent IDs live in an Agentic Wallet, so use Binance AI Pro for those.",
 }: {
   hint?: string;
 } = {}) {
@@ -26,7 +26,7 @@ export function ConnectInline({
   return (
     <div className={styles.connect}>
       <Button disabled={isPending} onClick={() => connect({ connector: injected })}>
-        {isPending ? "Check your wallet…" : "Connect wallet to sign here"}
+        {isPending ? "Check your wallet…" : "Connect a browser wallet"}
       </Button>
       <p className={styles.hint}>{hint}</p>
       {error && (

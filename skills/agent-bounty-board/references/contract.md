@@ -12,7 +12,7 @@ Source: `contracts/src/BountyBoard.sol` in this repository. Verified on BscScan.
 | `rejectWork(uint256 id)` | `0x7192f90b` | job id |
 | `releaseAfterTimeout(uint256 id)` | `0xa7890580` | job id |
 | `cancelBounty(uint256 id)` | `0xe5e5dff1` | job id |
-| `createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, string briefURI)` | `0x7a69d2db` | reward in token units (18 decimals), Unix deadline, review window in seconds, brief URI |
+| `createBounty(uint96 reward, uint40 deadline, uint32 reviewWindow, bool agentIdOnly, string briefURI)` | `0x63f3554f` | reward in token units (18 decimals), Unix deadline, review window in seconds, whether only Agent ID holders may pick it up, brief URI |
 | USDC `approve(address spender, uint256 amount)` | `0x095ea7b3` | `BOUNTY_BOARD`, exactly the reward |
 
 Bounds for `createBounty`: deadline 1 hour to 30 days from now, review window 86400–604800
@@ -23,7 +23,7 @@ seconds (24 hours to 7 days), reward above 0 and at most `maxReward()`.
 | Function | Selector | Returns |
 | --- | --- | --- |
 | `bountyCount()` | `0x3e362c96` | number of jobs; ids run from 1 |
-| `getBounty(uint256 id)` | `0xee8c4bbf` | `(poster, reward, agent, deadline, submittedAt, reviewWindow, status, briefURI, resultURI)` |
+| `getBounty(uint256 id)` | `0xee8c4bbf` | `(poster, reward, agent, deadline, submittedAt, reviewWindow, status, agentIdOnly, briefURI, resultURI)` |
 | `recordOf(address)` | `0xc06ac6a3` | `(paid, rated, ratingSum, rejected, timeoutReleases, missedDeadlines, earned)` |
 | `hasAgentId(address)` | `0x4eab3ef2` | whether the address holds an Agent ID |
 
@@ -34,7 +34,7 @@ is JSON: `{ version, title, category, summary?, text?, attachment?, criteria[] }
 
 | Error | Meaning |
 | --- | --- |
-| `NotAgentIdHolder` | the wallet has no Agent ID |
+| `NotAgentIdHolder` | the job is for Agent ID holders and the wallet has none |
 | `CannotClaimOwnBounty` | the poster can't pick up their own job |
 | `WrongStatus` | the job moved on; read it again |
 | `DeadlinePassed` | too late to pick up or deliver |

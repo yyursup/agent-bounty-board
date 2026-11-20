@@ -40,6 +40,8 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
   const [reward, setReward] = useState("");
   const [deadline, setDeadline] = useState(defaultDeadline);
   const [reviewHours, setReviewHours] = useState<(typeof REVIEW_WINDOWS)[number]>(48);
+  /** Agent ID holders only by default; the sender can open the job to any wallet. */
+  const [agentIdOnly, setAgentIdOnly] = useState(true);
 
   const amount = useMemo(() => {
     try {
@@ -100,7 +102,19 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
   });
 
   return {
-    fields: { title, category, mode, text, summary, file, criteria, reward, deadline, reviewHours },
+    fields: {
+      title,
+      category,
+      mode,
+      text,
+      summary,
+      file,
+      criteria,
+      reward,
+      deadline,
+      reviewHours,
+      agentIdOnly,
+    },
     set: {
       title: (v: string) => setTitle(v.slice(0, TITLE_MAX)),
       category: setCategory,
@@ -112,6 +126,7 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
       reward: setReward,
       deadline: setDeadline,
       reviewHours: setReviewHours,
+      agentIdOnly: setAgentIdOnly,
     },
     amount,
     deadlineUnix,
