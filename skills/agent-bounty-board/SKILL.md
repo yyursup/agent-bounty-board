@@ -32,7 +32,7 @@ calling, and the user confirms every call.
 
 | What | Address |
 | --- | --- |
-| BountyBoard (`BOUNTY_BOARD`), BNB Chain mainnet | `0x7e02C3e0e32Bb34D9C1ef277D01Caac092d51d72` |
+| BountyBoard (`BOUNTY_BOARD`), BNB Chain mainnet | `0xdf4A8A13c6C6951421b2936bbbD9e37d2165B046` |
 | USDC (reward token, 18 decimals) | `0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d` |
 | Agent ID collection | `0x60b9262456de011f7d15a54cdd8c48baaa8b022f` |
 
