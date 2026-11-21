@@ -28,6 +28,19 @@ export const bountyBoardAbi = [
   },
   {
     "type": "function",
+    "name": "FULL_BPS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "MAX_DURATION",
     "inputs": [],
     "outputs": [
@@ -35,6 +48,19 @@ export const bountyBoardAbi = [
         "name": "",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAX_FLOOR_BPS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
       }
     ],
     "stateMutability": "view"
@@ -113,24 +139,6 @@ export const bountyBoardAbi = [
   },
   {
     "type": "function",
-    "name": "approveWork",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "rating",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "bountyCount",
     "inputs": [],
     "outputs": [
@@ -191,6 +199,11 @@ export const bountyBoardAbi = [
         "name": "agentIdOnly",
         "type": "bool",
         "internalType": "bool"
+      },
+      {
+        "name": "floorBps",
+        "type": "uint16",
+        "internalType": "uint16"
       },
       {
         "name": "briefURI",
@@ -264,6 +277,16 @@ export const bountyBoardAbi = [
             "internalType": "bool"
           },
           {
+            "name": "floorBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "paidBps",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
             "name": "briefURI",
             "type": "string",
             "internalType": "string"
@@ -299,6 +322,19 @@ export const bountyBoardAbi = [
   },
   {
     "type": "function",
+    "name": "maxFloorBps",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "maxReward",
     "inputs": [],
     "outputs": [
@@ -306,6 +342,19 @@ export const bountyBoardAbi = [
         "name": "",
         "type": "uint96",
         "internalType": "uint96"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "minFloorBps",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
       }
     ],
     "stateMutability": "view"
@@ -358,6 +407,47 @@ export const bountyBoardAbi = [
   },
   {
     "type": "function",
+    "name": "posterRecordOf",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct IBountyBoard.PosterRecord",
+        "components": [
+          {
+            "name": "settled",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "paidBpsSum",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "unanswered",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "paidOut",
+            "type": "uint128",
+            "internalType": "uint128"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "recordOf",
     "inputs": [
       {
@@ -388,9 +478,9 @@ export const bountyBoardAbi = [
             "internalType": "uint32"
           },
           {
-            "name": "rejected",
-            "type": "uint32",
-            "internalType": "uint32"
+            "name": "paidBpsSum",
+            "type": "uint64",
+            "internalType": "uint64"
           },
           {
             "name": "timeoutReleases",
@@ -411,19 +501,6 @@ export const bountyBoardAbi = [
       }
     ],
     "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "rejectWork",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -457,6 +534,47 @@ export const bountyBoardAbi = [
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setFloorRange",
+    "inputs": [
+      {
+        "name": "minFloorBps_",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "maxFloorBps_",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "settle",
+    "inputs": [
+      {
+        "name": "id",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "paidBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "rating",
+        "type": "uint8",
+        "internalType": "uint8"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -556,6 +674,12 @@ export const bountyBoardAbi = [
         "internalType": "bool"
       },
       {
+        "name": "floorBps",
+        "type": "uint16",
+        "indexed": false,
+        "internalType": "uint16"
+      },
+      {
         "name": "briefURI",
         "type": "string",
         "indexed": false,
@@ -585,6 +709,25 @@ export const bountyBoardAbi = [
         "type": "uint96",
         "indexed": false,
         "internalType": "uint96"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FloorRangeChanged",
+    "inputs": [
+      {
+        "name": "minFloorBps",
+        "type": "uint16",
+        "indexed": false,
+        "internalType": "uint16"
+      },
+      {
+        "name": "maxFloorBps",
+        "type": "uint16",
+        "indexed": false,
+        "internalType": "uint16"
       }
     ],
     "anonymous": false
@@ -680,7 +823,7 @@ export const bountyBoardAbi = [
   },
   {
     "type": "event",
-    "name": "WorkApproved",
+    "name": "WorkSettled",
     "inputs": [
       {
         "name": "id",
@@ -695,35 +838,28 @@ export const bountyBoardAbi = [
         "internalType": "address"
       },
       {
-        "name": "reward",
-        "type": "uint96",
+        "name": "paidBps",
+        "type": "uint16",
         "indexed": false,
-        "internalType": "uint96"
+        "internalType": "uint16"
       },
       {
         "name": "rating",
         "type": "uint8",
         "indexed": false,
         "internalType": "uint8"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "WorkRejected",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
       },
       {
-        "name": "agent",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        "name": "toAgent",
+        "type": "uint96",
+        "indexed": false,
+        "internalType": "uint96"
+      },
+      {
+        "name": "toPoster",
+        "type": "uint96",
+        "indexed": false,
+        "internalType": "uint96"
       }
     ],
     "anonymous": false
@@ -809,6 +945,49 @@ export const bountyBoardAbi = [
         "name": "deadline",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidFloor",
+    "inputs": [
+      {
+        "name": "floorBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidFloorRange",
+    "inputs": [
+      {
+        "name": "minFloorBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "maxFloorBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidPayout",
+    "inputs": [
+      {
+        "name": "paidBps",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "floorBps",
+        "type": "uint16",
+        "internalType": "uint16"
       }
     ]
   },

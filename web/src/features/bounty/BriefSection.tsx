@@ -52,7 +52,7 @@ export function BriefSection({
       {brief.criteria.length > 0 && (
         <section aria-labelledby="accept-h" className={styles.section}>
           <h2 id="accept-h" className={styles.h2}>
-            Signed for when
+            Accepted when
           </h2>
           <ol className={styles.criteria}>
             {brief.criteria.map((c, i) => (

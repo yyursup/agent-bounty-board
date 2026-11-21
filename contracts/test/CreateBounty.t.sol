@@ -13,9 +13,9 @@ contract CreateBountyTest is BaseTest {
         uint40 deadline = _deadline();
 
         vm.expectEmit(address(board));
-        emit IBountyBoard.BountyCreated(1, poster, REWARD, deadline, REVIEW, true, BRIEF);
+        emit IBountyBoard.BountyCreated(1, poster, REWARD, deadline, REVIEW, true, FLOOR, BRIEF);
         vm.prank(poster);
-        uint256 id = board.createBounty(REWARD, deadline, REVIEW, true, BRIEF);
+        uint256 id = board.createBounty(REWARD, deadline, REVIEW, true, FLOOR, BRIEF);
 
         assertEq(id, 1);
         assertEq(board.bountyCount(), 1);
@@ -30,6 +30,8 @@ contract CreateBountyTest is BaseTest {
         assertEq(b.reviewWindow, REVIEW);
         assertEq(uint8(b.status), uint8(IBountyBoard.Status.Open));
         assertTrue(b.agentIdOnly);
+        assertEq(b.floorBps, FLOOR);
+        assertEq(b.paidBps, 0);
         assertEq(b.briefURI, BRIEF);
     }
 
@@ -43,7 +45,7 @@ contract CreateBountyTest is BaseTest {
         usdc.mint(outsider, REWARD);
         vm.startPrank(outsider);
         usdc.approve(address(board), REWARD);
-        uint256 id = board.createBounty(REWARD, _deadline(), REVIEW, false, BRIEF);
+        uint256 id = board.createBounty(REWARD, _deadline(), REVIEW, false, 0, BRIEF);
         vm.stopPrank();
 
         IBountyBoard.Bounty memory b = board.getBounty(id);
@@ -52,13 +54,33 @@ contract CreateBountyTest is BaseTest {
         assertEq(usdc.balanceOf(address(board)), REWARD);
     }
 
+    function test_create_floorMustBeInRangeForAgentIdJobs() public {
+        uint40 deadline = _deadline();
+        vm.startPrank(poster);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloor.selector, 999));
+        board.createBounty(REWARD, deadline, REVIEW, true, 999, BRIEF);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloor.selector, 5_001));
+        board.createBounty(REWARD, deadline, REVIEW, true, 5_001, BRIEF);
+        board.createBounty(REWARD, deadline, REVIEW, true, 1_000, BRIEF);
+        board.createBounty(REWARD, deadline, REVIEW, true, 5_000, BRIEF);
+        vm.stopPrank();
+    }
+
+    /// Open jobs have no floor, or a throwaway wallet could farm it with junk deliveries.
+    function test_create_openJobMustHaveNoFloor() public {
+        uint40 deadline = _deadline();
+        vm.prank(poster);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloor.selector, FLOOR));
+        board.createBounty(REWARD, deadline, REVIEW, false, FLOOR, BRIEF);
+    }
+
     function test_create_revertsOnZeroOrTooLargeReward() public {
         vm.startPrank(poster);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReward.selector, 0));
-        board.createBounty(0, _deadline(), REVIEW, true, BRIEF);
+        board.createBounty(0, _deadline(), REVIEW, true, FLOOR, BRIEF);
 
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReward.selector, MAX_REWARD + 1));
-        board.createBounty(MAX_REWARD + 1, _deadline(), REVIEW, true, BRIEF);
+        board.createBounty(MAX_REWARD + 1, _deadline(), REVIEW, true, FLOOR, BRIEF);
         vm.stopPrank();
     }
 
@@ -67,25 +89,25 @@ contract CreateBountyTest is BaseTest {
         uint40 tooLate = uint40(block.timestamp + 31 days);
         vm.startPrank(poster);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidDeadline.selector, tooSoon));
-        board.createBounty(REWARD, tooSoon, REVIEW, true, BRIEF);
+        board.createBounty(REWARD, tooSoon, REVIEW, true, FLOOR, BRIEF);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidDeadline.selector, tooLate));
-        board.createBounty(REWARD, tooLate, REVIEW, true, BRIEF);
+        board.createBounty(REWARD, tooLate, REVIEW, true, FLOOR, BRIEF);
         vm.stopPrank();
     }
 
     function test_create_revertsOnReviewWindowOutOfRange() public {
         vm.startPrank(poster);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReviewWindow.selector, 1 hours));
-        board.createBounty(REWARD, _deadline(), 1 hours, true, BRIEF);
+        board.createBounty(REWARD, _deadline(), 1 hours, true, FLOOR, BRIEF);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReviewWindow.selector, 8 days));
-        board.createBounty(REWARD, _deadline(), 8 days, true, BRIEF);
+        board.createBounty(REWARD, _deadline(), 8 days, true, FLOOR, BRIEF);
         vm.stopPrank();
     }
 
     function test_create_revertsOnEmptyBrief() public {
         vm.prank(poster);
         vm.expectRevert(IBountyBoard.EmptyURI.selector);
-        board.createBounty(REWARD, _deadline(), REVIEW, true, "");
+        board.createBounty(REWARD, _deadline(), REVIEW, true, FLOOR, "");
     }
 
     function test_create_revertsWhilePaused() public {
@@ -93,7 +115,7 @@ contract CreateBountyTest is BaseTest {
         board.pause();
         vm.prank(poster);
         vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
-        board.createBounty(REWARD, _deadline(), REVIEW, true, BRIEF);
+        board.createBounty(REWARD, _deadline(), REVIEW, true, FLOOR, BRIEF);
     }
 
     function test_create_revertsWithFeeOnTransferToken() public {
@@ -106,7 +128,7 @@ contract CreateBountyTest is BaseTest {
         vm.startPrank(poster);
         fee.approve(address(feeBoard), REWARD);
         vm.expectRevert(IBountyBoard.UnsupportedToken.selector);
-        feeBoard.createBounty(REWARD, _deadline(), REVIEW, true, BRIEF);
+        feeBoard.createBounty(REWARD, _deadline(), REVIEW, true, FLOOR, BRIEF);
         vm.stopPrank();
     }
 
@@ -120,7 +142,7 @@ contract CreateBountyTest is BaseTest {
     function testFuzz_create_acceptsAnyRewardWithinCap(uint96 reward) public {
         reward = uint96(bound(reward, 1, MAX_REWARD));
         vm.prank(poster);
-        uint256 id = board.createBounty(reward, _deadline(), REVIEW, true, BRIEF);
+        uint256 id = board.createBounty(reward, _deadline(), REVIEW, true, FLOOR, BRIEF);
         assertEq(board.getBounty(id).reward, reward);
         assertEq(usdc.balanceOf(address(board)), reward);
     }
@@ -130,7 +152,7 @@ contract CreateBountyTest is BaseTest {
         // forge-lint: disable-next-line(unsafe-typecast)
         uint40 deadline = uint40(block.timestamp + offset); // bounded to 30 days ahead
         vm.prank(poster);
-        uint256 id = board.createBounty(REWARD, deadline, REVIEW, true, BRIEF);
+        uint256 id = board.createBounty(REWARD, deadline, REVIEW, true, FLOOR, BRIEF);
         assertEq(board.getBounty(id).deadline, deadline);
     }
 

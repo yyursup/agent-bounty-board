@@ -29,7 +29,14 @@ function defaultDeadline(): string {
 export type SendForm = ReturnType<typeof useSendForm>;
 
 /** Everything the sender types, and whether it would be accepted by the contract. */
-export function useSendForm(decimals: number, maxReward: bigint | undefined) {
+/** Floors posters may choose, in basis points, as the board allows today. */
+type FloorRange = { min: number; max: number };
+
+export function useSendForm(
+  decimals: number,
+  maxReward: bigint | undefined,
+  floorRange: FloorRange,
+) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<Category>("Research");
   const [mode, setMode] = useState<BriefMode>("write");
@@ -42,6 +49,9 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
   const [reviewHours, setReviewHours] = useState<(typeof REVIEW_WINDOWS)[number]>(48);
   /** Agent ID holders only by default; the sender can open the job to any wallet. */
   const [agentIdOnly, setAgentIdOnly] = useState(true);
+  /** Least share the agent gets once it delivers, in whole percent. Open jobs have none. */
+  const [floorPercent, setFloorPercent] = useState("20");
+  const floorBps = agentIdOnly ? Math.round(Number(floorPercent) * 100) : 0;
 
   const amount = useMemo(() => {
     try {
@@ -71,8 +81,26 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
     ) {
       list.push("Pick a deadline between 1 hour and 30 days from now.");
     }
+    if (
+      agentIdOnly &&
+      (!Number.isFinite(floorBps) || floorBps < floorRange.min || floorBps > floorRange.max)
+    ) {
+      list.push(`Set a floor between ${floorRange.min / 100}% and ${floorRange.max / 100}%.`);
+    }
     return list;
-  }, [title, mode, text, file, summary, amount, maxReward, deadlineUnix]);
+  }, [
+    title,
+    mode,
+    text,
+    file,
+    summary,
+    amount,
+    maxReward,
+    deadlineUnix,
+    agentIdOnly,
+    floorBps,
+    floorRange,
+  ]);
 
   const chooseFile = (next: File | null): string | null => {
     if (!next) {
@@ -114,6 +142,7 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
       deadline,
       reviewHours,
       agentIdOnly,
+      floorPercent,
     },
     set: {
       title: (v: string) => setTitle(v.slice(0, TITLE_MAX)),
@@ -127,7 +156,9 @@ export function useSendForm(decimals: number, maxReward: bigint | undefined) {
       deadline: setDeadline,
       reviewHours: setReviewHours,
       agentIdOnly: setAgentIdOnly,
+      floorPercent: (v: string) => setFloorPercent(v.replace(/[^0-9]/g, "").slice(0, 2)),
     },
+    floorBps,
     amount,
     deadlineUnix,
     reviewSeconds: reviewHours * HOUR,

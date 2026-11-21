@@ -13,6 +13,7 @@ abstract contract BaseTest is Test {
     uint96 internal constant REWARD = 12e18;
     uint96 internal constant MAX_REWARD = 100e18;
     uint32 internal constant REVIEW = 48 hours;
+    uint16 internal constant FLOOR = 2_000;
     string internal constant BRIEF = "ipfs://brief";
     string internal constant RESULT = "ipfs://result";
 
@@ -48,7 +49,7 @@ abstract contract BaseTest is Test {
 
     function _post() internal returns (uint256 id) {
         vm.prank(poster);
-        id = board.createBounty(REWARD, _deadline(), REVIEW, true, BRIEF);
+        id = board.createBounty(REWARD, _deadline(), REVIEW, true, FLOOR, BRIEF);
     }
 
     function _postAndClaim() internal returns (uint256 id) {

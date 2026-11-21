@@ -99,6 +99,50 @@ contract CancelAndAdminTest is BaseTest {
 
     // ---- views ----------------------------------------------------------------------------------
 
+    function test_setFloorRange_appliesToNewJobsOnly() public {
+        uint256 before = _post();
+
+        vm.expectEmit(address(board));
+        emit IBountyBoard.FloorRangeChanged(3_000, 6_000);
+        vm.prank(owner);
+        board.setFloorRange(3_000, 6_000);
+
+        // The job posted earlier keeps its floor and can still be settled at it.
+        vm.prank(agent);
+        board.claimBounty(before);
+        vm.prank(agent);
+        board.submitWork(before, RESULT);
+        vm.prank(poster);
+        board.settle(before, FLOOR, 2);
+        assertEq(board.getBounty(before).paidBps, FLOOR);
+
+        // New jobs follow the new range.
+        uint40 deadline = _deadline();
+        vm.prank(poster);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloor.selector, FLOOR));
+        board.createBounty(REWARD, deadline, REVIEW, true, FLOOR, BRIEF);
+        vm.prank(poster);
+        board.createBounty(REWARD, deadline, REVIEW, true, 6_000, BRIEF);
+    }
+
+    function test_setFloorRange_rejectsBadRanges() public {
+        vm.startPrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloorRange.selector, 5_000, 4_000));
+        board.setFloorRange(5_000, 4_000);
+        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidFloorRange.selector, 1_000, 9_001));
+        board.setFloorRange(1_000, 9_001);
+        board.setFloorRange(0, 9_000);
+        vm.stopPrank();
+        assertEq(board.minFloorBps(), 0);
+        assertEq(board.maxFloorBps(), 9_000);
+    }
+
+    function test_setFloorRange_onlyOwner() public {
+        vm.prank(poster);
+        vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", poster));
+        board.setFloorRange(0, 1_000);
+    }
+
     function test_hasAgentId_followsTheCollection() public {
         assertTrue(board.hasAgentId(agent));
         assertFalse(board.hasAgentId(outsider));

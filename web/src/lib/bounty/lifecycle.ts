@@ -21,12 +21,25 @@ export function canSubmit(b: Bounty, me: Address | undefined, now: number): bool
   return b.status === BountyStatus.Claimed && same(me, b.agent) && now <= b.deadline;
 }
 
-export function canApprove(b: Bounty, me: Address | undefined): boolean {
-  return b.status === BountyStatus.Submitted && same(me, b.poster);
+/** The poster settles a delivery while the review window is open; after that the agent may release. */
+export function canSettle(b: Bounty, me: Address | undefined, now: number): boolean {
+  return b.status === BountyStatus.Submitted && same(me, b.poster) && now < reviewEndsAt(b);
 }
 
-export function canReject(b: Bounty, me: Address | undefined, now: number): boolean {
-  return canApprove(b, me) && now < reviewEndsAt(b);
+/** Payout tiers offered for a job: the floor, then the usual steps above it. */
+export function payoutTiers(floorBps: number): number[] {
+  return [...new Set([floorBps, 4_000, 6_000, 8_000, 10_000])]
+    .filter((t) => t >= floorBps)
+    .sort((a, b) => a - b);
+}
+
+/** The rating that goes with a payout share, so one choice sets both. */
+export function ratingForPayout(paidBps: number): number {
+  if (paidBps >= 10_000) return 5;
+  if (paidBps >= 8_000) return 4;
+  if (paidBps >= 6_000) return 3;
+  if (paidBps >= 4_000) return 2;
+  return 1;
 }
 
 export function canRelease(b: Bounty, me: Address | undefined, now: number): boolean {
@@ -57,6 +70,6 @@ export const STATUS_LABEL: Record<Bounty["status"], string> = {
   [BountyStatus.Open]: "Open",
   [BountyStatus.Claimed]: "Picked up",
   [BountyStatus.Submitted]: "Delivered",
-  [BountyStatus.Paid]: "Signed for",
+  [BountyStatus.Paid]: "Settled",
   [BountyStatus.Refunded]: "Returned",
 };

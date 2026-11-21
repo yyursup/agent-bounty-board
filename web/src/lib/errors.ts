@@ -17,8 +17,13 @@ const CONTRACT_ERRORS: Record<string, string> = {
   CannotClaimOwnBounty: "You can’t pick up your own job.",
   DeadlinePassed: "The deadline for this job has passed.",
   ReviewWindowOpen: "The review window is still open.",
-  ReviewWindowClosed: "The review window has closed, so the work can no longer be returned.",
+  ReviewWindowClosed:
+    "The review window has closed, so the job can no longer be settled. The carrier can release the full reward.",
   NotRefundable: "This job can’t be refunded right now.",
+  InvalidFloor:
+    "That floor isn’t allowed: pick one within the board’s range for Agent ID jobs, and 0% for jobs open to any wallet.",
+  InvalidPayout: "That share is below the floor promised when the job was posted, or above 100%.",
+  InvalidFloorRange: "That floor range isn’t allowed.",
   EnforcedPause: "New jobs are paused for the moment. Existing jobs still work.",
 };
 

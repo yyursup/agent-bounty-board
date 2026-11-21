@@ -2,15 +2,16 @@ import { zeroAddress } from "viem";
 import { describe, expect, it } from "vitest";
 
 import {
-  canApprove,
   canCancel,
   canClaim,
-  canReject,
   canRelease,
+  canSettle,
   canSubmit,
+  payoutTiers,
+  ratingForPayout,
   reviewEndsAt,
 } from "./lifecycle";
-import { BountyStatus, type Bounty } from "./types";
+import { BountyStatus, splitReward, type Bounty } from "./types";
 
 const poster = "0x00000000000000000000000000000000000000a1" as const;
 const agent = "0x00000000000000000000000000000000000000b2" as const;
@@ -26,6 +27,8 @@ const base: Bounty = {
   reviewWindow: 100,
   status: BountyStatus.Open,
   agentIdOnly: true,
+  floorBps: 2_000,
+  paidBps: 0,
   briefURI: "ipfs://brief",
   resultURI: "",
 };
@@ -46,12 +49,12 @@ describe("lifecycle mirrors the contract", () => {
     expect(canSubmit(claimed, stranger, 10)).toBe(false);
   });
 
-  it("opens approve to the poster, and reject only inside the window", () => {
+  it("lets only the poster settle, and only inside the review window", () => {
     expect(reviewEndsAt(submitted)).toBe(600);
-    expect(canApprove(submitted, poster)).toBe(true);
-    expect(canReject(submitted, poster, 599)).toBe(true);
-    expect(canReject(submitted, poster, 600)).toBe(false);
-    expect(canApprove(submitted, agent)).toBe(false);
+    expect(canSettle(submitted, poster, 599)).toBe(true);
+    expect(canSettle(submitted, poster, 600)).toBe(false);
+    expect(canSettle(submitted, agent, 500)).toBe(false);
+    expect(canSettle(claimed, poster, 500)).toBe(false);
   });
 
   it("lets the carrier release once the window has closed", () => {
@@ -66,5 +69,28 @@ describe("lifecycle mirrors the contract", () => {
     expect(canCancel(claimed, poster, 1_001)).toBe(true);
     expect(canCancel(submitted, poster, 9_999)).toBe(false);
     expect(canCancel(base, stranger, 0)).toBe(false);
+  });
+});
+
+describe("payouts", () => {
+  it("offers the floor and the usual steps above it", () => {
+    expect(payoutTiers(2_000)).toEqual([2_000, 4_000, 6_000, 8_000, 10_000]);
+    expect(payoutTiers(4_000)).toEqual([4_000, 6_000, 8_000, 10_000]);
+    expect(payoutTiers(4_500)).toEqual([4_500, 6_000, 8_000, 10_000]);
+    expect(payoutTiers(0)).toEqual([0, 4_000, 6_000, 8_000, 10_000]);
+  });
+
+  it("pairs each share with a rating", () => {
+    expect([0, 2_000, 4_000, 6_000, 8_000, 10_000].map(ratingForPayout)).toEqual([
+      1, 1, 2, 3, 4, 5,
+    ]);
+  });
+
+  it("splits the reward the way the contract rounds", () => {
+    expect(splitReward(12n, 6_000)).toEqual({ toAgent: 7n, toPoster: 5n });
+    expect(splitReward(100n * 10n ** 18n, 2_000)).toEqual({
+      toAgent: 20n * 10n ** 18n,
+      toPoster: 80n * 10n ** 18n,
+    });
   });
 });

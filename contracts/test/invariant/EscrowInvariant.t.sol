@@ -20,17 +20,23 @@ contract BoardHandler is Test {
         actors = actors_;
     }
 
-    function create(uint256 actorSeed, uint96 reward, uint256 offset, uint256 windowSeed, bool agentIdOnly)
-        external
-    {
+    function create(
+        uint256 actorSeed,
+        uint96 reward,
+        uint256 offset,
+        uint256 windowSeed,
+        bool agentIdOnly,
+        uint16 floorSeed
+    ) external {
         address actor = _actor(actorSeed);
         reward = uint96(bound(reward, 1, board.maxReward()));
         uint40 deadline = uint40(block.timestamp + bound(offset, board.MIN_DURATION(), board.MAX_DURATION()));
         uint32 window = uint32(bound(windowSeed, board.MIN_REVIEW_WINDOW(), board.MAX_REVIEW_WINDOW()));
+        uint16 floor = agentIdOnly ? uint16(bound(floorSeed, board.minFloorBps(), board.maxFloorBps())) : 0;
         usdc.mint(actor, reward);
         vm.startPrank(actor);
         usdc.approve(address(board), reward);
-        board.createBounty(reward, deadline, window, agentIdOnly, "ipfs://brief");
+        board.createBounty(reward, deadline, window, agentIdOnly, floor, "ipfs://brief");
         vm.stopPrank();
     }
 
@@ -50,18 +56,21 @@ contract BoardHandler is Test {
         board.submitWork(id, "ipfs://result");
     }
 
-    function approve(uint256 idSeed, uint8 rating) external {
+    function settle(uint256 idSeed, uint16 paidSeed, uint8 rating) external {
         uint256 id = _id(idSeed);
         address poster = _posterOf(id);
+        uint16 floor = board.bountyCount() == 0 ? 0 : board.getBounty(id).floorBps;
+        uint16 paidBps = uint16(bound(paidSeed, floor, 10_000));
         vm.prank(poster);
-        board.approveWork(id, uint8(bound(rating, 1, 5)));
+        board.settle(id, paidBps, uint8(bound(rating, 1, 5)));
     }
 
-    function reject(uint256 idSeed) external {
-        uint256 id = _id(idSeed);
-        address poster = _posterOf(id);
-        vm.prank(poster);
-        board.rejectWork(id);
+    /// The owner moving the floor range mid-flight must never touch funds already in escrow.
+    function setRange(uint16 lo, uint16 hi) external {
+        hi = uint16(bound(hi, 0, 9_000));
+        lo = uint16(bound(lo, 0, hi));
+        vm.prank(board.owner());
+        board.setFloorRange(lo, hi);
     }
 
     function release(uint256 idSeed) external {
@@ -83,7 +92,7 @@ contract BoardHandler is Test {
         uint256 id = _id(idSeed);
         address actor = _actor(actorSeed);
         vm.startPrank(actor);
-        try board.approveWork(id, uint8(bound(rating, 1, 5))) {} catch {}
+        try board.settle(id, 10_000, uint8(bound(rating, 1, 5))) {} catch {}
         try board.releaseAfterTimeout(id) {} catch {}
         try board.cancelBounty(id) {} catch {}
         vm.stopPrank();

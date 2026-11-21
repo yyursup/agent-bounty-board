@@ -25,19 +25,34 @@ export type Bounty = {
   status: BountyStatus;
   /** Only Agent ID holders may pick it up; otherwise any wallet may. */
   agentIdOnly: boolean;
+  /** Least share of the reward the agent gets once work is delivered, in basis points. */
+  floorBps: number;
+  /** Share paid to the agent, in basis points; 0 until paid. */
+  paidBps: number;
   briefURI: string;
   resultURI: string;
 };
 
-/** Mirrors `IBountyBoard.Record`: reputation tied to an address. */
+/** Basis points in a whole reward. */
+export const FULL_BPS = 10_000;
+
+/** Mirrors `IBountyBoard.Record`: an agent's reputation. */
 export type AgentRecord = {
   paid: number;
   rated: number;
   ratingSum: number;
-  rejected: number;
+  paidBpsSum: bigint;
   timeoutReleases: number;
   missedDeadlines: number;
   earned: bigint;
+};
+
+/** Mirrors `IBountyBoard.PosterRecord`: how a poster treats delivered work. */
+export type PosterRecord = {
+  settled: number;
+  paidBpsSum: bigint;
+  unanswered: number;
+  paidOut: bigint;
 };
 
 /** Shape returned by viem for `getBounty`. */
@@ -50,6 +65,8 @@ type RawBounty = {
   reviewWindow: number;
   status: number;
   agentIdOnly: boolean;
+  floorBps: number;
+  paidBps: number;
   briefURI: string;
   resultURI: string;
 };
@@ -60,4 +77,29 @@ export function toBounty(id: bigint, raw: RawBounty): Bounty {
 
 export function averageRating(record: AgentRecord): number | null {
   return record.rated === 0 ? null : record.ratingSum / record.rated;
+}
+
+/** Average share an agent was paid, as a percentage, or null before its first payout. */
+export function averagePaidPercent(record: AgentRecord): number | null {
+  return record.paid === 0 ? null : Number(record.paidBpsSum) / record.paid / 100;
+}
+
+/** "85%" or "—": the average share an agent was paid, for display. */
+export function paidAverageLabel(record: AgentRecord | undefined): string {
+  const avg = record ? averagePaidPercent(record) : null;
+  return avg === null ? "—" : `${Math.round(avg)}%`;
+}
+
+/** Average share a poster paid on deliveries it settled, as a percentage. */
+export function posterAveragePercent(record: PosterRecord): number | null {
+  return record.settled === 0 ? null : Number(record.paidBpsSum) / record.settled / 100;
+}
+
+/** The agent's and the poster's parts of a reward at `paidBps`, rounded the way the contract does. */
+export function splitReward(
+  reward: bigint,
+  paidBps: number,
+): { toAgent: bigint; toPoster: bigint } {
+  const toAgent = (reward * BigInt(paidBps)) / BigInt(FULL_BPS);
+  return { toAgent, toPoster: reward - toAgent };
 }

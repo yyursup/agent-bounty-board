@@ -36,8 +36,11 @@ function stops(b: Bounty, now: number): Stop[] {
           done: true,
         }
       : {
-          name: "Signed for",
-          note: "Postage paid to the carrier, rating stamped in their passport.",
+          name: "Settled",
+          note:
+            s === BountyStatus.Paid
+              ? `${b.paidBps / 100}% of the postage paid to the carrier, rating stamped in their passport.`
+              : "The sender grades the work and pays a share, never below the floor.",
           done: s === BountyStatus.Paid,
         },
   ];

@@ -15,12 +15,18 @@ import {IBountyBoard} from "./interfaces/IBountyBoard.sol";
 ///         Agent ID holders may pick it up (the default in the app) or any wallet may.
 ///
 ///         Escrowed funds leave the contract by exactly three routes:
-///           1. the poster approves the work            -> paid to the agent
-///           2. the review window closes unanswered     -> the agent releases it to itself
-///           3. nothing is delivered                    -> refunded to the poster
+///           1. the poster settles the delivery          -> a share of at least the job's floor goes to
+///                                                          the agent, the rest back to the poster
+///           2. the review window closes unanswered      -> the agent releases all of it to itself
+///           3. nothing is delivered                     -> refunded to the poster
 ///
-/// @dev Owner powers are limited to pausing the creation of new bounties. The owner cannot move,
-///      freeze or redirect escrowed funds, and payouts and refunds keep working while paused.
+///         The floor is the poster's promise, fixed when the job is posted: once work is delivered,
+///         the agent gets at least that share, however the poster or the poster's agent grades it.
+///         Jobs open to any wallet have no floor, so throwaway wallets can't farm it with junk.
+///
+/// @dev Owner powers: pausing the creation of new bounties, and setting the range posters may
+///      choose a floor from. Both apply to new bounties only. The owner cannot move, freeze or
+///      redirect escrowed funds, and payouts and refunds keep working while paused.
 contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -33,6 +39,9 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     uint32 public constant MIN_REVIEW_WINDOW = 24 hours;
     uint32 public constant MAX_REVIEW_WINDOW = 7 days;
     uint8 public constant MAX_RATING = 5;
+    uint16 public constant FULL_BPS = 10_000;
+    /// @notice The highest floor the owner may allow, so there is always something left to grade.
+    uint16 public constant MAX_FLOOR_BPS = 9_000;
 
     /// @notice The token rewards are paid in (USDC on BNB Chain).
     IERC20 public immutable rewardToken;
@@ -48,6 +57,11 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     uint256 private _bountyCount;
     mapping(uint256 id => Bounty) private _bounties;
     mapping(address account => Record) private _records;
+    mapping(address account => PosterRecord) private _posterRecords;
+
+    /// @notice Floors posters may choose for Agent-ID-only jobs, in basis points (10% to 50% at launch).
+    uint16 public minFloorBps = 1_000;
+    uint16 public maxFloorBps = 5_000;
 
     // ---------------------------------------------------------------------------------------------
     // Setup
@@ -68,11 +82,14 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     /// @inheritdoc IBountyBoard
     /// @dev The caller must first approve exactly `reward` for this contract. Posting needs no
     ///      Agent ID: the poster's money is at stake, not anyone's reputation.
+    /// @dev `floorBps` must be within the owner's range for Agent-ID-only jobs, and zero for jobs open
+    ///      to any wallet.
     function createBounty(
         uint96 reward,
         uint40 deadline,
         uint32 reviewWindow,
         bool agentIdOnly,
+        uint16 floorBps,
         string calldata briefURI
     ) external whenNotPaused nonReentrant returns (uint256 id) {
         if (reward == 0 || reward > maxReward) revert InvalidReward(reward);
@@ -83,6 +100,9 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
             revert InvalidReviewWindow(reviewWindow);
         }
         if (bytes(briefURI).length == 0) revert EmptyURI();
+        if (agentIdOnly ? (floorBps < minFloorBps || floorBps > maxFloorBps) : floorBps != 0) {
+            revert InvalidFloor(floorBps);
+        }
 
         id = ++_bountyCount;
         Bounty storage b = _bounties[id];
@@ -92,47 +112,46 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         b.reviewWindow = reviewWindow;
         b.status = Status.Open;
         b.agentIdOnly = agentIdOnly;
+        b.floorBps = floorBps;
         b.briefURI = briefURI;
 
-        emit BountyCreated(id, msg.sender, reward, deadline, reviewWindow, agentIdOnly, briefURI);
+        emit BountyCreated(id, msg.sender, reward, deadline, reviewWindow, agentIdOnly, floorBps, briefURI);
 
         _pullExact(msg.sender, reward);
     }
 
     /// @inheritdoc IBountyBoard
-    function approveWork(uint256 id, uint8 rating) external nonReentrant {
+    /// @dev Only while the review window is open. Pays `paidBps` of the reward to the agent, at
+    ///      least the job's floor, and returns the rest to the poster. The bounty closes either way.
+    function settle(uint256 id, uint16 paidBps, uint8 rating) external nonReentrant {
         Bounty storage b = _onlyPoster(id);
         _requireStatus(id, b, Status.Submitted);
+        if (block.timestamp >= _reviewEnds(b)) revert ReviewWindowClosed(id);
+        if (paidBps < b.floorBps || paidBps > FULL_BPS) revert InvalidPayout(paidBps, b.floorBps);
         if (rating == 0 || rating > MAX_RATING) revert InvalidRating(rating);
 
+        uint96 toAgent = uint96((uint256(b.reward) * paidBps) / FULL_BPS);
+        uint96 toPoster = b.reward - toAgent;
+
         b.status = Status.Paid;
+        b.paidBps = paidBps;
+
         Record storage r = _records[b.agent];
         r.paid += 1;
         r.rated += 1;
         r.ratingSum += rating;
-        r.earned += b.reward;
+        r.paidBpsSum += paidBps;
+        r.earned += toAgent;
 
-        emit WorkApproved(id, b.agent, b.reward, rating);
+        PosterRecord storage p = _posterRecords[msg.sender];
+        p.settled += 1;
+        p.paidBpsSum += paidBps;
+        p.paidOut += toAgent;
 
-        rewardToken.safeTransfer(b.agent, b.reward);
-    }
+        emit WorkSettled(id, b.agent, paidBps, rating, toAgent, toPoster);
 
-    /// @inheritdoc IBountyBoard
-    /// @dev Only while the review window is open. The job goes back on the board for another agent.
-    function rejectWork(uint256 id) external {
-        Bounty storage b = _onlyPoster(id);
-        _requireStatus(id, b, Status.Submitted);
-        if (block.timestamp >= _reviewEnds(b)) revert ReviewWindowClosed(id);
-
-        address agent = b.agent;
-        _records[agent].rejected += 1;
-
-        b.agent = address(0);
-        b.submittedAt = 0;
-        b.resultURI = "";
-        b.status = Status.Open;
-
-        emit WorkRejected(id, agent);
+        if (toAgent > 0) rewardToken.safeTransfer(b.agent, toAgent);
+        if (toPoster > 0) rewardToken.safeTransfer(msg.sender, toPoster);
     }
 
     /// @inheritdoc IBountyBoard
@@ -194,10 +213,17 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         if (block.timestamp < _reviewEnds(b)) revert ReviewWindowOpen(id);
 
         b.status = Status.Paid;
+        b.paidBps = FULL_BPS;
+
         Record storage r = _records[b.agent];
         r.paid += 1;
         r.timeoutReleases += 1;
+        r.paidBpsSum += FULL_BPS;
         r.earned += b.reward;
+
+        PosterRecord storage p = _posterRecords[b.poster];
+        p.unanswered += 1;
+        p.paidOut += b.reward;
 
         emit PaymentReleasedAfterTimeout(id, b.agent, b.reward);
 
@@ -217,6 +243,17 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         _unpause();
     }
 
+    /// @notice Sets the floors posters may choose for new Agent-ID-only jobs. Jobs already posted
+    ///         keep the floor they were posted with.
+    function setFloorRange(uint16 minFloorBps_, uint16 maxFloorBps_) external onlyOwner {
+        if (minFloorBps_ > maxFloorBps_ || maxFloorBps_ > MAX_FLOOR_BPS) {
+            revert InvalidFloorRange(minFloorBps_, maxFloorBps_);
+        }
+        minFloorBps = minFloorBps_;
+        maxFloorBps = maxFloorBps_;
+        emit FloorRangeChanged(minFloorBps_, maxFloorBps_);
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Views
     // ---------------------------------------------------------------------------------------------
@@ -234,6 +271,11 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     /// @inheritdoc IBountyBoard
     function recordOf(address account) external view returns (Record memory) {
         return _records[account];
+    }
+
+    /// @inheritdoc IBountyBoard
+    function posterRecordOf(address account) external view returns (PosterRecord memory) {
+        return _posterRecords[account];
     }
 
     /// @inheritdoc IBountyBoard

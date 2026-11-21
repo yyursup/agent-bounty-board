@@ -26,19 +26,26 @@ export function useBountyActions() {
       deadline: number;
       reviewWindow: number;
       agentIdOnly: boolean;
+      floorBps: number;
       briefURI: string;
     }) =>
       board({
         ...boardContract,
         functionName: "createBounty",
-        args: [job.reward, job.deadline, job.reviewWindow, job.agentIdOnly, job.briefURI],
+        args: [
+          job.reward,
+          job.deadline,
+          job.reviewWindow,
+          job.agentIdOnly,
+          job.floorBps,
+          job.briefURI,
+        ],
       }),
     claim: (id: bigint) => board({ ...boardContract, functionName: "claimBounty", args: [id] }),
     submit: (id: bigint, resultURI: string) =>
       board({ ...boardContract, functionName: "submitWork", args: [id, resultURI] }),
-    approve: (id: bigint, rating: number) =>
-      board({ ...boardContract, functionName: "approveWork", args: [id, rating] }),
-    reject: (id: bigint) => board({ ...boardContract, functionName: "rejectWork", args: [id] }),
+    settle: (id: bigint, paidBps: number, rating: number) =>
+      board({ ...boardContract, functionName: "settle", args: [id, paidBps, rating] }),
     release: (id: bigint) =>
       board({ ...boardContract, functionName: "releaseAfterTimeout", args: [id] }),
     cancel: (id: bigint) => board({ ...boardContract, functionName: "cancelBounty", args: [id] }),

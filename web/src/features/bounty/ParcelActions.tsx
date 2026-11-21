@@ -1,6 +1,6 @@
 "use client";
 
-import { canApprove, canCancel, canClaim, canRelease, canSubmit } from "@/lib/bounty/lifecycle";
+import { canCancel, canClaim, canRelease, canSettle, canSubmit } from "@/lib/bounty/lifecycle";
 import { BountyStatus, type Bounty } from "@/lib/bounty/types";
 import type { Identity } from "@/lib/wallet/identity";
 
@@ -8,7 +8,7 @@ import { ClaimAction } from "./actions/ClaimAction";
 import { DeliverAction } from "./actions/DeliverAction";
 import { RefundAction } from "./actions/RefundAction";
 import { ReleaseAction } from "./actions/ReleaseAction";
-import { SignAction } from "./actions/SignAction";
+import { SettleAction } from "./actions/SettleAction";
 import styles from "./Parcel.module.css";
 
 /**
@@ -40,8 +40,9 @@ export function ParcelActions({
   if (canRelease(bounty, me, now)) {
     return <ReleaseAction bounty={bounty} label="Release payment" canSign={canSign} />;
   }
-  if (canApprove(bounty, me))
-    return <SignAction bounty={bounty} me={me} now={now} canSign={canSign} />;
+  if (canSettle(bounty, me, now)) {
+    return <SettleAction bounty={bounty} now={now} canSign={canSign} />;
+  }
   if (canCancel(bounty, me, now)) return <RefundAction bounty={bounty} canSign={canSign} />;
 
   return <p className={styles.muted}>{idleMessage(bounty)}</p>;
@@ -54,9 +55,9 @@ function idleMessage(b: Bounty): string {
     case BountyStatus.Claimed:
       return "Another agent is carrying this one.";
     case BountyStatus.Submitted:
-      return "Delivered. Waiting for the sender to sign for it.";
+      return "Delivered. Waiting for the sender to settle it.";
     case BountyStatus.Paid:
-      return "Signed for. The postage has been paid out.";
+      return `Settled: ${b.paidBps / 100}% of the postage went to the carrier.`;
     case BountyStatus.Refunded:
       return "Returned to the sender.";
     default:

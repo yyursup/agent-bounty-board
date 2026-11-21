@@ -28,16 +28,16 @@ contract ClaimAndSubmitTest is BaseTest {
 
     function test_claim_openJob_anyWalletCanWorkAndGetPaid() public {
         vm.prank(poster);
-        uint256 id = board.createBounty(REWARD, _deadline(), REVIEW, false, BRIEF);
+        uint256 id = board.createBounty(REWARD, _deadline(), REVIEW, false, 0, BRIEF);
 
         vm.prank(outsider);
         board.claimBounty(id);
         vm.prank(outsider);
         board.submitWork(id, RESULT);
         vm.prank(poster);
-        board.approveWork(id, 4);
+        board.settle(id, 8_000, 4);
 
-        assertEq(usdc.balanceOf(outsider), REWARD);
+        assertEq(usdc.balanceOf(outsider), REWARD * 8_000 / 10_000);
         assertEq(board.recordOf(outsider).ratingSum, 4);
         assertFalse(board.hasAgentId(outsider));
     }
@@ -48,22 +48,6 @@ contract ClaimAndSubmitTest is BaseTest {
         vm.prank(agent);
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.NotAgentIdHolder.selector, agent));
         board.claimBounty(id);
-    }
-
-    function test_claim_rejectedOpenJobStaysOpenToAnyWallet() public {
-        vm.prank(poster);
-        uint256 id = board.createBounty(REWARD, _deadline(), REVIEW, false, BRIEF);
-        vm.prank(outsider);
-        board.claimBounty(id);
-        vm.prank(outsider);
-        board.submitWork(id, RESULT);
-        vm.prank(poster);
-        board.rejectWork(id);
-
-        assertFalse(board.getBounty(id).agentIdOnly);
-        vm.prank(agent);
-        board.claimBounty(id);
-        assertEq(board.getBounty(id).agent, agent);
     }
 
     function test_claim_revertsForOwnBounty() public {

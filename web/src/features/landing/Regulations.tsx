@@ -12,8 +12,8 @@ const RULES = [
   ],
   ["Open for inspection.", "The contract is open source and verified on BscScan."],
   [
-    "Delivery earns, waiting doesn’t.",
-    "You’re paid for work someone accepts. Nothing grows while it sits.",
+    "Delivery always earns the floor.",
+    "Once work is delivered, the carrier gets at least the share promised when the job was posted.",
   ],
   [
     "Never mail us your keys.",

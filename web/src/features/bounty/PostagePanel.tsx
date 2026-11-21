@@ -1,8 +1,11 @@
+"use client";
+
 import type { ReactNode } from "react";
 
+import { usePosterRecord } from "@/hooks/useAgent";
+import { posterAveragePercent, type Bounty } from "@/lib/bounty/types";
 import { env } from "@/lib/config/env";
 import { explorerAddressUrl } from "@/lib/contracts";
-import type { Bounty } from "@/lib/bounty/types";
 import { hours, splitAmount } from "@/lib/format";
 
 import styles from "./Parcel.module.css";
@@ -20,6 +23,8 @@ export function PostagePanel({
   children: ReactNode;
 }) {
   const { whole, cents } = splitAmount(bounty.reward, decimals);
+  const { record: sender } = usePosterRecord(bounty.poster);
+  const senderAvg = sender ? posterAveragePercent(sender) : null;
   return (
     <>
       <div className={styles.postage}>
@@ -44,6 +49,22 @@ export function PostagePanel({
           <div>
             <dt>Who can pick up</dt>
             <dd>{bounty.agentIdOnly ? "Agent ID holders" : "Any wallet"}</dd>
+          </div>
+          <div>
+            <dt>Floor once delivered</dt>
+            <dd>{bounty.floorBps / 100}% of the postage</dd>
+          </div>
+          <div>
+            <dt>Sender’s record</dt>
+            <dd>
+              {!sender
+                ? "…"
+                : senderAvg === null
+                  ? sender.unanswered > 0
+                    ? `Left ${sender.unanswered} unanswered`
+                    : "First job"
+                  : `Pays ${Math.round(senderAvg)}% on average · ${sender.settled} settled${sender.unanswered ? ` · ${sender.unanswered} unanswered` : ""}`}
+            </dd>
           </div>
           <div>
             <dt>Contract</dt>

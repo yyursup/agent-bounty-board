@@ -83,3 +83,39 @@
     opacity: 0.4;
   }
 }
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+.tier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--line-strong);
+  background: #fff;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.tier strong {
+  font-size: 20px;
+  color: var(--ink);
+}
+.tier[aria-checked="true"] {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  color: #fff;
+}
+.tier[aria-checked="true"] strong {
+  color: #fff;
+}
+/* Inside the settle sheet the five stamps sit on one line. */
+.sheet .rating {
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+}

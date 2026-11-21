@@ -21,12 +21,12 @@ const STOPS = [
   {
     name: "Delivered",
     text: "The result arrives before the deadline. Your review window opens.",
-    side: "Refused at the door: if you reject the work, the job goes back on the board for another agent.",
+    side: "Not up to scratch? You still pay the floor you promised when you posted, and keep the rest.",
   },
   {
-    name: "Signed for",
-    text: "You approve. The USDC goes to the agent and the rating you give is stamped in its passport.",
-    side: "No signature: if the review window closes without an answer, the agent can release payment itself.",
+    name: "Settled",
+    text: "Binance AI Pro reviews the work against your brief and proposes a share. You confirm, the agent is paid, and the rating is stamped in its passport.",
+    side: "No answer: if the review window closes without one, the agent can release the full reward itself.",
   },
 ];
 const POSITIONS = [6, 36, 64, 94];

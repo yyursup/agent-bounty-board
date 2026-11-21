@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useReadContract } from "wagmi";
 
+import { useFloorRange } from "@/hooks/useAgent";
 import { useRewardToken } from "@/hooks/useRewardToken";
 import { CATEGORIES } from "@/lib/bounty/brief";
 import { env } from "@/lib/config/env";
@@ -21,7 +22,8 @@ export function SendJob() {
     functionName: "maxReward",
     query: { enabled: env.isConfigured },
   });
-  const form = useSendForm(decimals, maxReward);
+  const floorRange = useFloorRange();
+  const form = useSendForm(decimals, maxReward, floorRange);
   const [posted, setPosted] = useState(false);
   const f = form.fields;
 
@@ -72,7 +74,7 @@ export function SendJob() {
             <BriefInput form={form} />
 
             <div className={styles.field}>
-              <span className={styles.labelText}>Signed for when…</span>
+              <span className={styles.labelText}>Accepted when…</span>
               {f.criteria.map((value, i) => (
                 <label key={i} className={styles.criterion}>
                   <span className="mono">{i + 1}</span>
@@ -160,6 +162,27 @@ export function SendJob() {
                   : "Faster pickup, less certainty: a wallet without an Agent ID has no verified reputation."}
               </span>
             </div>
+            <label className={styles.field}>
+              <span className={styles.labelText}>
+                Floor: the least the carrier gets once it delivers
+              </span>
+              <span className={styles.floor}>
+                <input
+                  className={styles.input}
+                  inputMode="numeric"
+                  aria-describedby="floor-hint"
+                  disabled={!f.agentIdOnly}
+                  value={f.agentIdOnly ? f.floorPercent : "0"}
+                  onChange={(e) => form.set.floorPercent(e.target.value)}
+                />
+                <span aria-hidden="true">%</span>
+              </span>
+              <span id="floor-hint" className={styles.hint}>
+                {f.agentIdOnly
+                  ? `Between ${floorRange.min / 100}% and ${floorRange.max / 100}%. When the work comes in, you (or your agent) grade it and pay a share, but never less than this. It tells carriers their effort won’t go unpaid.`
+                  : "Jobs open to any wallet have no floor, so throwaway wallets can’t collect it with junk."}
+              </span>
+            </label>
           </Section>
 
           <Section n={3} title="Seal it">

@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Address } from "viem";
 
 import { RefundAction } from "@/features/bounty/actions/RefundAction";
-import { SignAction } from "@/features/bounty/actions/SignAction";
-import { canApprove, canCancel, reviewEndsAt } from "@/lib/bounty/lifecycle";
+import { SettleAction } from "@/features/bounty/actions/SettleAction";
+import { canCancel, canSettle, reviewEndsAt } from "@/lib/bounty/lifecycle";
 import { BountyStatus, type Bounty } from "@/lib/bounty/types";
 import { formatDateTime, formatRemaining, shortAddress } from "@/lib/format";
 import { toGatewayUrl } from "@/lib/ipfs";
@@ -11,7 +11,7 @@ import { toGatewayUrl } from "@/lib/ipfs";
 import { JobCard } from "./JobCard";
 import styles from "./Mailbag.module.css";
 
-/** A job the wallet sent: sign for a delivery, or take the postage back when allowed. */
+/** A job the wallet sent: settle a delivery, or take the postage back when allowed. */
 export function SenderJob(props: {
   bounty: Bounty;
   me: Address;
@@ -56,10 +56,9 @@ export function SenderJob(props: {
         </p>
       )}
 
-      {canApprove(bounty, me) && (
-        <SignAction
+      {canSettle(bounty, me, now) && (
+        <SettleAction
           bounty={bounty}
-          me={me}
           now={now}
           canSign={canSign}
           onOpen={onFocus}

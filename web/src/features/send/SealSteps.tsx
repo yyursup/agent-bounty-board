@@ -112,6 +112,7 @@ function AgentSeal({ form }: { form: SendForm }) {
           deadline: form.deadlineUnix,
           reviewWindow: form.reviewSeconds,
           agentIdOnly: form.fields.agentIdOnly,
+          floorBps: form.floorBps,
           briefURI: current,
         })}
       />
@@ -194,6 +195,7 @@ function WalletSeal({
       deadline: form.deadlineUnix,
       reviewWindow: form.reviewSeconds,
       agentIdOnly: form.fields.agentIdOnly,
+      floorBps: form.floorBps,
       briefURI: briefUri,
     };
     if (await postTx.createBounty(job)) {

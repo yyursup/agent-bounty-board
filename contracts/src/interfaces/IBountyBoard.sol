@@ -27,20 +27,30 @@ interface IBountyBoard {
         uint32 reviewWindow;
         Status status;
         bool agentIdOnly; // only Agent ID holders may claim; otherwise any wallet may
+        uint16 floorBps; // least share of the reward the agent gets once work is delivered, in basis points
+        uint16 paidBps; // share actually paid to the agent, set when the bounty is paid
         string briefURI;
         string resultURI;
     }
 
-    /// @notice Reputation tied to an address. Kept for every wallet; it only counts as Agent ID
-    ///         reputation when `hasAgentId` is true, because an Agent ID cannot be transferred or bought.
+    /// @notice An agent's reputation. Kept for every wallet; it only counts as Agent ID reputation
+    ///         when `hasAgentId` is true, because an Agent ID cannot be transferred or bought.
     struct Record {
-        uint32 paid; // jobs that ended in a payout, approved or released after timeout
-        uint32 rated; // jobs the poster approved with a rating
+        uint32 paid; // jobs that ended in a payout, settled or released after timeout
+        uint32 rated; // jobs the poster settled with a rating
         uint32 ratingSum; // sum of those ratings, 1 to 5 each
-        uint32 rejected; // submissions the poster rejected
+        uint64 paidBpsSum; // sum of the shares paid, so paidBpsSum / paid is the average share
         uint32 timeoutReleases; // payouts the agent released after the review window closed
         uint32 missedDeadlines; // claims that ran past the deadline with nothing submitted
         uint128 earned; // total reward received, in token units
+    }
+
+    /// @notice How a poster treats delivered work, so agents can judge a job before taking it.
+    struct PosterRecord {
+        uint32 settled; // deliveries the poster settled within the review window
+        uint64 paidBpsSum; // sum of the shares paid on those, so paidBpsSum / settled is the average
+        uint32 unanswered; // deliveries left unanswered until the agent released the reward
+        uint128 paidOut; // total paid to agents, in token units
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -54,14 +64,22 @@ interface IBountyBoard {
         uint40 deadline,
         uint32 reviewWindow,
         bool agentIdOnly,
+        uint16 floorBps,
         string briefURI
     );
     event BountyClaimed(uint256 indexed id, address indexed agent);
     event WorkSubmitted(uint256 indexed id, address indexed agent, string resultURI);
-    event WorkApproved(uint256 indexed id, address indexed agent, uint96 reward, uint8 rating);
-    event WorkRejected(uint256 indexed id, address indexed agent);
+    event WorkSettled(
+        uint256 indexed id,
+        address indexed agent,
+        uint16 paidBps,
+        uint8 rating,
+        uint96 toAgent,
+        uint96 toPoster
+    );
     event PaymentReleasedAfterTimeout(uint256 indexed id, address indexed agent, uint96 reward);
     event BountyRefunded(uint256 indexed id, address indexed poster, uint96 reward);
+    event FloorRangeChanged(uint16 minFloorBps, uint16 maxFloorBps);
 
     // ---------------------------------------------------------------------------------------------
     // Errors
@@ -84,6 +102,9 @@ interface IBountyBoard {
     error ReviewWindowOpen(uint256 id);
     error ReviewWindowClosed(uint256 id);
     error NotRefundable(uint256 id);
+    error InvalidFloor(uint16 floorBps);
+    error InvalidFloorRange(uint16 minFloorBps, uint16 maxFloorBps);
+    error InvalidPayout(uint16 paidBps, uint16 floorBps);
 
     // ---------------------------------------------------------------------------------------------
     // Actions
@@ -94,12 +115,12 @@ interface IBountyBoard {
         uint40 deadline,
         uint32 reviewWindow,
         bool agentIdOnly,
+        uint16 floorBps,
         string calldata briefURI
     ) external returns (uint256 id);
     function claimBounty(uint256 id) external;
     function submitWork(uint256 id, string calldata resultURI) external;
-    function approveWork(uint256 id, uint8 rating) external;
-    function rejectWork(uint256 id) external;
+    function settle(uint256 id, uint16 paidBps, uint8 rating) external;
     function releaseAfterTimeout(uint256 id) external;
     function cancelBounty(uint256 id) external;
 
@@ -110,5 +131,6 @@ interface IBountyBoard {
     function getBounty(uint256 id) external view returns (Bounty memory);
     function bountyCount() external view returns (uint256);
     function recordOf(address account) external view returns (Record memory);
+    function posterRecordOf(address account) external view returns (PosterRecord memory);
     function hasAgentId(address account) external view returns (bool);
 }

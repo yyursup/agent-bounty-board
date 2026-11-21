@@ -5,13 +5,13 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 import type { Address } from "viem";
 
 import { useAgentRecord } from "@/hooks/useAgent";
-import { averageRating } from "@/lib/bounty/types";
+import { averageRating, paidAverageLabel } from "@/lib/bounty/types";
 import { shortAddress } from "@/lib/format";
 
 import styles from "./Mailbag.module.css";
 
 /**
- * A small passport: jobs paid, average rating, rejections. Numbers bump when they change, so a
+ * A small passport: jobs paid, average rating, average share paid. Numbers bump when they change, so a
  * rating that lands here is felt. The "paid" figure is the target the flying stamp aims at.
  */
 export const PassportCard = forwardRef<
@@ -34,7 +34,7 @@ export const PassportCard = forwardRef<
       <span className={styles.passportStats}>
         <Stat value={String(paid)} label="paid" bump={bump} ref={paidRef} />
         <Stat value={avg === null ? "—" : avg.toFixed(1)} label="average" bump={bump} />
-        <Stat value={String(record?.rejected ?? 0)} label="rejected" />
+        <Stat value={paidAverageLabel(record)} label="avg. paid" />
       </span>
       <span className={styles.passportLink}>Open passport →</span>
     </Link>

@@ -468,3 +468,15 @@ select.input {
   line-height: 1.5;
   color: var(--ink-soft);
 }
+.floor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 160px;
+  font-weight: 700;
+  font-size: 18px;
+}
+.floor .input:disabled {
+  background: var(--paper);
+  color: var(--ink-soft);
+}

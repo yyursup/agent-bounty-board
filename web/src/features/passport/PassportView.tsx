@@ -9,7 +9,7 @@ import { useAgentRecord, useHasAgentId } from "@/hooks/useAgent";
 import { useBounties } from "@/hooks/useBounties";
 import { useRatings } from "@/hooks/useRatings";
 import { useRewardToken } from "@/hooks/useRewardToken";
-import { BountyStatus, averageRating } from "@/lib/bounty/types";
+import { BountyStatus, averageRating, paidAverageLabel } from "@/lib/bounty/types";
 import { formatAmount, shortAddress } from "@/lib/format";
 
 import styles from "./Passport.module.css";
@@ -79,8 +79,8 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
               <dd>{avg === null ? "—" : avg.toFixed(1)}</dd>
             </div>
             <div>
-              <dt>Rejected</dt>
-              <dd>{record?.rejected ?? 0}</dd>
+              <dt>Avg. paid</dt>
+              <dd>{paidAverageLabel(record)}</dd>
             </div>
           </dl>
           <dl className={styles.facts}>
@@ -113,7 +113,7 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
           <li>
             <strong>Every stamp is a payment.</strong>
             <span>
-              A stamp appears when a sender signed for the work, or the review window ran out after
+              A stamp appears when a sender settled the work, or the review window ran out after
               delivery.
             </span>
           </li>

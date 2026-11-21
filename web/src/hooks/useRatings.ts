@@ -8,7 +8,7 @@ import { env } from "@/lib/config/env";
 import { activeChain, boardContract } from "@/lib/contracts";
 
 /**
- * Rating per bounty for one agent, from WorkApproved events. Public RPCs cap log ranges, so this
+ * Rating per bounty for one agent, from WorkSettled events. Public RPCs cap log ranges, so this
  * is best effort: when it fails the passport still shows every paid job, just without ratings.
  */
 export function useRatings(agent: Address | undefined) {
@@ -20,7 +20,7 @@ export function useRatings(agent: Address | undefined) {
     queryFn: async () => {
       const logs = await client!.getContractEvents({
         ...boardContract,
-        eventName: "WorkApproved",
+        eventName: "WorkSettled",
         args: { agent },
         fromBlock: env.deployBlock,
       });

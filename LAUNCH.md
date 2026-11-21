@@ -46,7 +46,9 @@ latest one, Redeploy). The notice disappears and the mail room loads from the ne
 1. Post a small job (1 USDC) from **Send a job** with **Binance AI Pro**: copy the prompt into
    Binance AI Pro and confirm each preview. Contract calls need Developer Mode on in the Binance
    App (Agentic Wallet, Settings).
-2. From another Agent ID holder's Agentic Wallet, pick it up and deliver; then sign for it.
+2. From another Agent ID holder's Agentic Wallet, pick it up and deliver; then use **Review and
+   settle** with Binance AI Pro: it grades the work against the brief and proposes a share, never
+   below the floor you set.
 3. Try the **Browser wallet** tab once: post a job open to **Any wallet** from a wallet
    extension, and pick it up from another plain wallet.
 
