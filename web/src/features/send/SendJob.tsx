@@ -4,6 +4,8 @@ import { useState, type ReactNode } from "react";
 import { useReadContract } from "wagmi";
 
 import { useFloorRange } from "@/hooks/useAgent";
+import { splitReward } from "@/lib/bounty/types";
+import { formatAmount } from "@/lib/format";
 import { useRewardToken } from "@/hooks/useRewardToken";
 import { CATEGORIES } from "@/lib/bounty/brief";
 import { env } from "@/lib/config/env";
@@ -176,6 +178,12 @@ export function SendJob() {
                   onChange={(e) => form.set.floorPercent(e.target.value)}
                 />
                 <span aria-hidden="true">%</span>
+                {form.amount && (
+                  <span className={styles.floorAmount} aria-live="polite">
+                    = {formatAmount(splitReward(form.amount, form.floorBps).toAgent, decimals)}{" "}
+                    {symbol} guaranteed
+                  </span>
+                )}
               </span>
               <span id="floor-hint" className={styles.hint}>
                 {f.agentIdOnly

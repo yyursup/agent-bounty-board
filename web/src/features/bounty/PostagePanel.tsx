@@ -3,10 +3,10 @@
 import type { ReactNode } from "react";
 
 import { usePosterRecord } from "@/hooks/useAgent";
-import { posterAveragePercent, type Bounty } from "@/lib/bounty/types";
+import { posterAveragePercent, splitReward, type Bounty } from "@/lib/bounty/types";
 import { env } from "@/lib/config/env";
 import { explorerAddressUrl } from "@/lib/contracts";
-import { hours, splitAmount } from "@/lib/format";
+import { formatAmount, hours, splitAmount } from "@/lib/format";
 
 import styles from "./Parcel.module.css";
 
@@ -52,7 +52,10 @@ export function PostagePanel({
           </div>
           <div>
             <dt>Floor once delivered</dt>
-            <dd>{bounty.floorBps / 100}% of the postage</dd>
+            <dd>
+              {bounty.floorBps / 100}% ·{" "}
+              {formatAmount(splitReward(bounty.reward, bounty.floorBps).toAgent, decimals)} {symbol}
+            </dd>
           </div>
           <div>
             <dt>Sender’s record</dt>

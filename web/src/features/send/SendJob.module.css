@@ -472,11 +472,19 @@ select.input {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 160px;
   font-weight: 700;
   font-size: 18px;
 }
 .floor .input:disabled {
   background: var(--paper);
   color: var(--ink-soft);
+}
+.floor .input {
+  max-width: 120px;
+}
+.floorAmount {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: #17683a;
 }
