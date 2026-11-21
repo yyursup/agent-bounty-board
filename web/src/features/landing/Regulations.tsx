@@ -8,7 +8,7 @@ const RULES = [
   ["Exact postage only.", "Each approval equals one bounty’s reward. Never unlimited."],
   [
     "The post office can’t open parcels.",
-    "The contract owner can’t withdraw, freeze or mint. A pause only stops new posts.",
+    "The contract owner can’t withdraw, freeze or mint. It can only pause new posts and set the floor range for new jobs.",
   ],
   ["Open for inspection.", "The contract is open source and verified on BscScan."],
   [

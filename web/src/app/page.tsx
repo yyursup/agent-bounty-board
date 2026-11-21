@@ -2,6 +2,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { CallToAction } from "@/features/landing/CallToAction";
 import { Hero } from "@/features/landing/Hero";
 import { LandingHeader } from "@/features/landing/LandingHeader";
+import { OwnerPermissions } from "@/features/landing/OwnerPermissions";
 import styles from "@/features/landing/Landing.module.css";
 import { PassportSpecimen } from "@/features/landing/PassportSpecimen";
 import { Regulations } from "@/features/landing/Regulations";
@@ -18,6 +19,7 @@ export default function LandingPage() {
         <WaysIn />
         <PassportSpecimen />
         <Regulations />
+        <OwnerPermissions />
         <CallToAction />
       </main>
       <SiteFooter />

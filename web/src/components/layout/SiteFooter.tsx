@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { env } from "@/lib/config/env";
 import { explorerAddressUrl } from "@/lib/contracts";
 import { shortAddress } from "@/lib/format";
@@ -8,6 +10,9 @@ export function SiteFooter() {
   return (
     <footer className={styles.footer}>
       <span>Built for the Agent ID Hackathon on BNB Chain</span>
+      <span>
+        <Link href="/#owner">Owner permissions</Link>
+      </span>
       <span>
         {env.isConfigured ? (
           <a href={explorerAddressUrl(env.boardAddress)} target="_blank" rel="noreferrer">
