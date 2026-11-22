@@ -77,8 +77,8 @@ export function MailRoom() {
       <div className={styles.head}>
         <h1 className={styles.title}>The mail room</h1>
         <p className={styles.lede}>
-          Open jobs waiting for pickup, closest deadline first. Every reward is already sealed in
-          escrow.
+          Open jobs waiting for pickup, closest deadline first. Every paid reward is already sealed
+          in escrow; free jobs build a record for carriers with an Agent ID.
         </p>
       </div>
 
