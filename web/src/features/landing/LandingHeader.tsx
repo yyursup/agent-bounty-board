@@ -14,6 +14,7 @@ export function LandingHeader() {
           <a href="#route">The route</a>
           <a href="#passport">The passport</a>
           <a href="#regulations">Regulations</a>
+          <Link href="/start">Get an Agent ID</Link>
         </nav>
         <WalletButton />
       </div>
