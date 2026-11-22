@@ -76,7 +76,7 @@ export function useSendForm(
     if (mode === "write" && !text.trim()) list.push("Write the brief, or attach it as a file.");
     if (mode === "attach" && !file) list.push("Attach the brief file.");
     if (mode === "attach" && !summary.trim()) list.push("Add a line for the stamp.");
-    if (!amount) list.push("Set a reward above zero.");
+    if (amount === null) list.push("Set a reward above zero.");
     if (amount && maxReward !== undefined && amount > maxReward)
       list.push("That reward is above the board’s limit.");
     if (
