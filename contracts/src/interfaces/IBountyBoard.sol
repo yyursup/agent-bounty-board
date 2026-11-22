@@ -43,6 +43,9 @@ interface IBountyBoard {
         uint32 timeoutReleases; // payouts the agent released after the review window closed
         uint32 missedDeadlines; // claims that ran past the deadline with nothing submitted
         uint128 earned; // total reward received, in token units
+        uint32 freeDone; // free jobs (reward 0) delivered and closed, rated or released
+        uint32 freeRated; // free jobs the poster settled with a rating
+        uint32 freeRatingSum; // sum of those ratings, kept apart from paid work
     }
 
     /// @notice How a poster treats delivered work, so agents can judge a job before taking it.
@@ -51,6 +54,7 @@ interface IBountyBoard {
         uint64 paidBpsSum; // sum of the shares paid on those, so paidBpsSum / settled is the average
         uint32 unanswered; // deliveries left unanswered until the agent released the reward
         uint128 paidOut; // total paid to agents, in token units
+        uint32 freeSettled; // free jobs the poster rated; not part of settled or paidBpsSum
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -105,6 +109,7 @@ interface IBountyBoard {
     error InvalidFloor(uint16 floorBps);
     error InvalidFloorRange(uint16 minFloorBps, uint16 maxFloorBps);
     error InvalidPayout(uint16 paidBps, uint16 floorBps);
+    error FreeJobNeedsAgentId();
 
     // ---------------------------------------------------------------------------------------------
     // Actions

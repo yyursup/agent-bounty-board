@@ -17,7 +17,8 @@ type StampProps = {
   category: Category;
   kicker: string;
   title: string;
-  amount: { whole: string; cents: string };
+  /** "free" for a free job: no reward, done for reputation. */
+  amount: { whole: string; cents: string } | "free";
   unit?: string;
   size?: "sm" | "md" | "lg";
   /** Extra classes on the perforated frame, used for motion. */
@@ -45,12 +46,19 @@ export function Stamp({
         <span className={look.art} aria-hidden="true" />
         <span className={styles.kicker}>{kicker}</span>
         <span className={styles.title}>{title}</span>
-        <span className={styles.amount}>
-          <span className={styles.whole}>{amount.whole}</span>
-          <span className={styles.unit}>
-            .{amount.cents} {unit}
+        {amount === "free" ? (
+          <span className={styles.amount}>
+            <span className={styles.whole}>Free</span>
+            <span className={styles.unit}>for reputation</span>
           </span>
-        </span>
+        ) : (
+          <span className={styles.amount}>
+            <span className={styles.whole}>{amount.whole}</span>
+            <span className={styles.unit}>
+              .{amount.cents} {unit}
+            </span>
+          </span>
+        )}
         {children}
       </div>
     </div>

@@ -38,7 +38,13 @@ export function ParcelActions({
   if (canClaim(bounty, me, now)) return <ClaimAction bounty={bounty} canSign={canSign} />;
   if (canSubmit(bounty, me, now)) return <DeliverAction bounty={bounty} canSign={canSign} />;
   if (canRelease(bounty, me, now)) {
-    return <ReleaseAction bounty={bounty} label="Release payment" canSign={canSign} />;
+    return (
+      <ReleaseAction
+        bounty={bounty}
+        label={bounty.reward === 0n ? "Close without a rating" : "Release payment"}
+        canSign={canSign}
+      />
+    );
   }
   if (canSettle(bounty, me, now)) {
     return <SettleAction bounty={bounty} now={now} canSign={canSign} />;

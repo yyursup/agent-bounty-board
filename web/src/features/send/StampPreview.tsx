@@ -68,7 +68,9 @@ export function StampPreview({
             category={face}
             kicker={`#NEW · ${face.toUpperCase()}`}
             title={title.trim() || "Your job title"}
-            amount={amount ? { whole, cents } : { whole: "—", cents: "00" }}
+            amount={
+              amount === 0n ? "free" : amount ? { whole, cents } : { whole: "—", cents: "00" }
+            }
           />
         </div>
       </div>

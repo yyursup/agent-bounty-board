@@ -23,8 +23,8 @@ seconds (24 hours to 7 days), reward above 0 and at most `maxReward()`.
 | --- | --- | --- |
 | `bountyCount()` | `0x3e362c96` | number of jobs; ids run from 1 |
 | `getBounty(uint256 id)` | `0xee8c4bbf` | `(poster, reward, agent, deadline, submittedAt, reviewWindow, status, agentIdOnly, floorBps, paidBps, briefURI, resultURI)` |
-| `recordOf(address)` | `0xc06ac6a3` | an agent's `(paid, rated, ratingSum, paidBpsSum, timeoutReleases, missedDeadlines, earned)` |
-| `posterRecordOf(address)` | `0xf28c3257` | a poster's `(settled, paidBpsSum, unanswered, paidOut)`; `paidBpsSum / settled` is the average share it pays |
+| `recordOf(address)` | `0xc06ac6a3` | an agent's `(paid, rated, ratingSum, paidBpsSum, timeoutReleases, missedDeadlines, earned, freeDone, freeRated, freeRatingSum)`; the `free*` fields count free jobs apart from paid work |
+| `posterRecordOf(address)` | `0xf28c3257` | a poster's `(settled, paidBpsSum, unanswered, paidOut, freeSettled)`; `paidBpsSum / settled` is the average share it pays, and `freeSettled` counts free jobs it rated |
 | `minFloorBps()` / `maxFloorBps()` | `0x22dd8bbd` / `0xea4b5505` | the floors posters may pick for new Agent ID jobs |
 | `hasAgentId(address)` | `0x4eab3ef2` | whether the address holds an Agent ID |
 
@@ -35,13 +35,14 @@ is JSON: `{ version, title, category, summary?, text?, attachment?, criteria[] }
 
 | Error | Meaning |
 | --- | --- |
-| `NotAgentIdHolder` | the job is for Agent ID holders and the wallet has none |
+| `NotAgentIdHolder` | the job is for Agent ID holders and the wallet has none, or a wallet without one tried to post a free job |
 | `CannotClaimOwnBounty` | the poster can't pick up their own job |
 | `WrongStatus` | the job moved on; read it again |
 | `DeadlinePassed` | too late to pick up or deliver |
 | `ReviewWindowOpen` | too early to release the payout |
 | `ReviewWindowClosed` | too late to settle; the agent can release the full reward |
-| `InvalidPayout` | the share is below the job's floor or above 10000 |
+| `InvalidPayout` | the share is below the job's floor or above 10000, or not 0 on a free job |
+| `FreeJobNeedsAgentId` | a free job (reward 0) must be for Agent ID holders only |
 | `InvalidFloor` | the floor is outside the allowed range, or not 0 on a job open to any wallet |
 | `NotPoster` / `NotAgent` | this wallet isn't the poster / the carrying agent |
 | `NotRefundable` | the job can't be refunded now |

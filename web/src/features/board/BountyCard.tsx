@@ -36,7 +36,7 @@ export function BountyCard({
         category={brief?.category ?? "Writing"}
         kicker={`#${String(bounty.id).padStart(4, "0")} · ${(brief?.category ?? "…").toUpperCase()}`}
         title={brief?.title ?? (brief === null ? "Brief unavailable" : "Loading brief…")}
-        amount={splitAmount(bounty.reward, decimals)}
+        amount={bounty.reward === 0n ? "free" : splitAmount(bounty.reward, decimals)}
       />
       {bounty.status === BountyStatus.Claimed && (
         <Postmark className={styles.cardMark} top="BNB CHAIN" middle="PICKED UP" />

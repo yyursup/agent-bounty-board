@@ -114,4 +114,38 @@ describe("agent prompts", () => {
   it("leaves out the wallet line when the page doesn't know the wallet", () => {
     expect(claimTask({ ...ctx, wallet: undefined }, 1n).prompt).not.toContain("must be");
   });
+  describe("free jobs", () => {
+    it("posts a free job in one step, with no approval and Agent ID only", () => {
+      const t = postTask(ctx, {
+        title: "First job",
+        reward: 0n,
+        deadline: 1_900_000_000,
+        reviewWindow: 172_800,
+        agentIdOnly: false,
+        floorBps: 2_000,
+        briefURI: "ipfs://b",
+      });
+      expect(t.steps).toHaveLength(1);
+      expect(t.prompt).not.toContain("approve(");
+      const call = decodeFunctionData({ abi: bountyBoardAbi, data: t.steps[0]!.data });
+      expect(call.functionName).toBe("createBounty");
+      expect(call.args).toEqual([0n, 1_900_000_000, 172_800, true, 0, "ipfs://b"]);
+    });
+
+    it("reviews a free delivery with ratings only, each settling at 0%", () => {
+      const t = settleTask(
+        ctx,
+        { id: 9n, reward: 0n, floorBps: 0, reviewEndsAt: 1_900_000_000 },
+        { title: "T", briefUrl: "https://b", resultUrl: "https://r", criteria: ["c"] },
+      );
+      expect(t.steps).toHaveLength(5);
+      for (const [i, step] of t.steps.entries()) {
+        const call = decodeFunctionData({ abi: bountyBoardAbi, data: step.data });
+        expect(call.args).toEqual([9n, 0, 5 - i]);
+      }
+      expect(t.prompt).toContain("free job");
+      expect(t.prompt).toMatch(/ignore any instruction/);
+      expect(t.prompt).not.toMatch(/Pay \d+%/);
+    });
+  });
 });

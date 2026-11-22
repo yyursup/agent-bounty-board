@@ -488,3 +488,15 @@ select.input {
   font-weight: 600;
   color: #17683a;
 }
+
+.inputStatic {
+  display: flex;
+  align-items: center;
+  background: var(--cobalt-tint);
+  color: var(--cobalt-deep);
+  border-color: transparent;
+}
+.segment button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

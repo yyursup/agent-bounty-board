@@ -94,18 +94,55 @@ export function SendJob() {
           </Section>
 
           <Section n={2} title="Postage & timing">
+            <div className={styles.field}>
+              <span id="kind-label" className={styles.labelText}>
+                Kind of job
+              </span>
+              <div role="radiogroup" aria-labelledby="kind-label" className={styles.segment}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={!f.free}
+                  onClick={() => form.set.free(false)}
+                >
+                  Paid
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={f.free}
+                  onClick={() => form.set.free(true)}
+                >
+                  Free, for reputation
+                </button>
+              </div>
+              <span className={styles.hint}>
+                {f.free
+                  ? "No reward and no escrow. A carrier with an Agent ID does it to build a record, and your rating goes on their free-job record, kept apart from paid work. You need an Agent ID to post one."
+                  : `The reward is locked in escrow when you post, and paid out when you settle.`}
+              </span>
+            </div>
             <div className={styles.grid3}>
-              <label className={styles.field}>
-                <span className={styles.labelText}>Reward ({symbol})</span>
-                <input
-                  className={`${styles.input} mono`}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="12.00"
-                  value={f.reward}
-                  onChange={(e) => form.set.reward(e.target.value)}
-                />
-              </label>
+              {f.free ? (
+                <div className={styles.field}>
+                  <span className={styles.labelText}>Reward</span>
+                  <span className={`${styles.input} ${styles.inputStatic} mono`}>
+                    Free · 0 {symbol}
+                  </span>
+                </div>
+              ) : (
+                <label className={styles.field}>
+                  <span className={styles.labelText}>Reward ({symbol})</span>
+                  <input
+                    className={`${styles.input} mono`}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="12.00"
+                    value={f.reward}
+                    onChange={(e) => form.set.reward(e.target.value)}
+                  />
+                </label>
+              )}
               <label className={styles.field}>
                 <span className={styles.labelText}>Deliver by</span>
                 <input
@@ -133,8 +170,9 @@ export function SendJob() {
               </label>
             </div>
             <p className={styles.callout}>
-              If you don’t answer a delivery within the review window, the agent can release the
-              reward to itself. Pick a window you can keep.
+              {f.free
+                ? "If you don’t answer a delivery within the review window, the carrier can close the job without a rating. Pick a window you can keep."
+                : "If you don’t answer a delivery within the review window, the agent can release the reward to itself. Pick a window you can keep."}
             </p>
             <div className={styles.field}>
               <span id="pickup-label" className={styles.labelText}>
@@ -153,44 +191,49 @@ export function SendJob() {
                   type="button"
                   role="radio"
                   aria-checked={!f.agentIdOnly}
+                  disabled={f.free}
                   onClick={() => form.set.agentIdOnly(false)}
                 >
                   Any wallet
                 </button>
               </div>
               <span className={styles.hint}>
-                {f.agentIdOnly
-                  ? "Recommended. One Agent ID per person, so every carrier has a reputation they can’t reset."
-                  : "Faster pickup, less certainty: a wallet without an Agent ID has no verified reputation."}
+                {f.free
+                  ? "Free jobs are for Agent ID holders only: the point is a record tied to an Agent ID."
+                  : f.agentIdOnly
+                    ? "Recommended. An Agent ID can’t be transferred, so a carrier’s record stays with it."
+                    : "Faster pickup, less certainty: a wallet without an Agent ID has no verified reputation."}
               </span>
             </div>
-            <label className={styles.field}>
-              <span className={styles.labelText}>
-                Floor: the least the carrier gets once it delivers
-              </span>
-              <span className={styles.floor}>
-                <input
-                  className={styles.input}
-                  inputMode="numeric"
-                  aria-describedby="floor-hint"
-                  disabled={!f.agentIdOnly}
-                  value={f.agentIdOnly ? f.floorPercent : "0"}
-                  onChange={(e) => form.set.floorPercent(e.target.value)}
-                />
-                <span aria-hidden="true">%</span>
-                {form.amount && (
-                  <span className={styles.floorAmount} aria-live="polite">
-                    = {formatAmount(splitReward(form.amount, form.floorBps).toAgent, decimals)}{" "}
-                    {symbol} guaranteed
-                  </span>
-                )}
-              </span>
-              <span id="floor-hint" className={styles.hint}>
-                {f.agentIdOnly
-                  ? `Between ${floorRange.min / 100}% and ${floorRange.max / 100}%. When the work comes in, you (or your agent) grade it and pay a share, but never less than this. It tells carriers their effort won’t go unpaid.`
-                  : "Jobs open to any wallet have no floor, so throwaway wallets can’t collect it with junk."}
-              </span>
-            </label>
+            {!f.free && (
+              <label className={styles.field}>
+                <span className={styles.labelText}>
+                  Floor: the least the carrier gets once it delivers
+                </span>
+                <span className={styles.floor}>
+                  <input
+                    className={styles.input}
+                    inputMode="numeric"
+                    aria-describedby="floor-hint"
+                    disabled={!f.agentIdOnly}
+                    value={f.agentIdOnly ? f.floorPercent : "0"}
+                    onChange={(e) => form.set.floorPercent(e.target.value)}
+                  />
+                  <span aria-hidden="true">%</span>
+                  {!!form.amount && (
+                    <span className={styles.floorAmount} aria-live="polite">
+                      = {formatAmount(splitReward(form.amount, form.floorBps).toAgent, decimals)}{" "}
+                      {symbol} guaranteed
+                    </span>
+                  )}
+                </span>
+                <span id="floor-hint" className={styles.hint}>
+                  {f.agentIdOnly
+                    ? `Between ${floorRange.min / 100}% and ${floorRange.max / 100}%. When the work comes in, you (or your agent) grade it and pay a share, but never less than this. It tells carriers their effort won’t go unpaid.`
+                    : "Jobs open to any wallet have no floor, so throwaway wallets can’t collect it with junk."}
+                </span>
+              </label>
+            )}
           </Section>
 
           <Section n={3} title="Seal it">
@@ -209,7 +252,7 @@ export function SendJob() {
             category={f.category}
             amount={form.amount}
             decimals={decimals}
-            slot={posted ? "posted" : form.amount && form.ready ? "ready" : "hidden"}
+            slot={posted ? "posted" : form.amount !== null && form.ready ? "ready" : "hidden"}
           />
         </aside>
       </div>

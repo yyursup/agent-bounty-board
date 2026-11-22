@@ -50,6 +50,7 @@ export function SettleAction({
   const [picked, setPicked] = useState<HTMLElement | null>(null);
   const ends = reviewEndsAt(bounty);
   const money = (v: bigint) => `${formatAmount(v, decimals)} ${symbol}`;
+  const free = bounty.reward === 0n;
 
   if (!open) {
     return (
@@ -61,11 +62,12 @@ export function SettleAction({
             onOpen?.();
           }}
         >
-          Review and settle
+          {free ? "Review and rate" : "Review and settle"}
         </Button>
         <p className={styles.hint}>
-          {formatRemaining(ends, now)} left to settle. If the window closes unanswered, the agent
-          can release the full reward.
+          {free
+            ? `${formatRemaining(ends, now)} left to rate. If the window closes unanswered, the carrier can close the job without a rating.`
+            : `${formatRemaining(ends, now)} left to settle. If the window closes unanswered, the agent can release the full reward.`}
         </p>
       </div>
     );
@@ -87,11 +89,13 @@ export function SettleAction({
 
   return (
     <div className={styles.sheet}>
-      <span className={styles.label}>Settle the delivery</span>
+      <span className={styles.label}>{free ? "Rate the delivery" : "Settle the delivery"}</span>
       <p className={styles.hint}>
-        {bounty.floorBps > 0
-          ? `You promised at least ${bounty.floorBps / 100}% when you posted this job, so the agent gets that much whatever the grade. The rest is yours to award.`
-          : "This job was open to any wallet, so it has no floor: you can award anything from 0% up."}
+        {free
+          ? "A free job pays nothing. Your rating goes on the carrier’s free-job record, kept apart from paid work, so rate it as honestly as a paid one."
+          : bounty.floorBps > 0
+            ? `You promised at least ${bounty.floorBps / 100}% when you posted this job, so the agent gets that much whatever the grade. The rest is yours to award.`
+            : "This job was open to any wallet, so it has no floor: you can award anything from 0% up."}
       </p>
       <TwoWays
         canSign={canSign}
@@ -99,27 +103,29 @@ export function SettleAction({
         agentPending={<p className={styles.hint}>Reading the brief…</p>}
         manual={
           <div className={styles.stack}>
-            <div role="radiogroup" aria-label="Share to pay" className={styles.tiers}>
-              {tiers.map((t) => {
-                const s = splitReward(bounty.reward, t);
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    role="radio"
-                    aria-checked={t === paidBps}
-                    className={styles.tier}
-                    onClick={() => {
-                      setPaidBps(t);
-                      setRating(ratingForPayout(t));
-                    }}
-                  >
-                    <strong>{t / 100}%</strong>
-                    <span>{money(s.toAgent)}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {!free && (
+              <div role="radiogroup" aria-label="Share to pay" className={styles.tiers}>
+                {tiers.map((t) => {
+                  const s = splitReward(bounty.reward, t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      role="radio"
+                      aria-checked={t === paidBps}
+                      className={styles.tier}
+                      onClick={() => {
+                        setPaidBps(t);
+                        setRating(ratingForPayout(t));
+                      }}
+                    >
+                      <strong>{t / 100}%</strong>
+                      <span>{money(s.toAgent)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <span className={styles.label}>Stamp a rating in their passport</span>
             <div role="radiogroup" aria-label="Rating" className={styles.ratings}>
               {RATINGS.map((n) => (
@@ -139,16 +145,18 @@ export function SettleAction({
               ))}
             </div>
             <p className={styles.hint}>
-              The agent gets {money(split.toAgent)}, {money(split.toPoster)} comes back to you, and
-              the job closes.
+              {free
+                ? "No money moves. The rating is recorded and the job closes."
+                : `The agent gets ${money(split.toAgent)}, ${money(split.toPoster)} comes back to you, and the job closes.`}
             </p>
             <Button
               disabled={tx.busy}
               onClick={async () => {
-                if (await tx.settle(bounty.id, paidBps, rating)) onSigned?.(rating, picked);
+                if (await tx.settle(bounty.id, free ? 0 : paidBps, rating))
+                  onSigned?.(rating, picked);
               }}
             >
-              Settle and pay {paidBps / 100}%
+              {free ? `Rate ${rating}/5 and close` : `Settle and pay ${paidBps / 100}%`}
             </Button>
             <TxStatus phase={tx.phase} error={tx.error} hash={tx.hash} />
           </div>

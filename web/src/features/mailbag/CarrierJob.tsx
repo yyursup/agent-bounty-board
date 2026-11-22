@@ -36,7 +36,11 @@ export function CarrierJob(props: {
             <ReleaseAction
               bounty={bounty}
               canSign={canSign}
-              label={`Release ${formatAmount(bounty.reward, decimals)} ${symbol}`}
+              label={
+                bounty.reward === 0n
+                  ? "Close without a rating"
+                  : `Release ${formatAmount(bounty.reward, decimals)} ${symbol}`
+              }
             />
           ) : (
             <div className={styles.locked}>

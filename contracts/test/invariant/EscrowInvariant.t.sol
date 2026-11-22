@@ -29,10 +29,13 @@ contract BoardHandler is Test {
         uint16 floorSeed
     ) external {
         address actor = _actor(actorSeed);
-        reward = uint96(bound(reward, 1, board.maxReward()));
+        reward = uint96(bound(reward, 0, board.maxReward())); // 0 is a free job
+        if (reward == 0) agentIdOnly = true;
         uint40 deadline = uint40(block.timestamp + bound(offset, board.MIN_DURATION(), board.MAX_DURATION()));
         uint32 window = uint32(bound(windowSeed, board.MIN_REVIEW_WINDOW(), board.MAX_REVIEW_WINDOW()));
-        uint16 floor = agentIdOnly ? uint16(bound(floorSeed, board.minFloorBps(), board.maxFloorBps())) : 0;
+        uint16 floor = reward == 0
+            ? 0
+            : agentIdOnly ? uint16(bound(floorSeed, board.minFloorBps(), board.maxFloorBps())) : 0;
         usdc.mint(actor, reward);
         vm.startPrank(actor);
         usdc.approve(address(board), reward);
@@ -59,8 +62,9 @@ contract BoardHandler is Test {
     function settle(uint256 idSeed, uint16 paidSeed, uint8 rating) external {
         uint256 id = _id(idSeed);
         address poster = _posterOf(id);
-        uint16 floor = board.bountyCount() == 0 ? 0 : board.getBounty(id).floorBps;
-        uint16 paidBps = uint16(bound(paidSeed, floor, 10_000));
+        bool any = board.bountyCount() > 0;
+        uint16 floor = any ? board.getBounty(id).floorBps : 0;
+        uint16 paidBps = any && board.getBounty(id).reward == 0 ? 0 : uint16(bound(paidSeed, floor, 10_000));
         vm.prank(poster);
         board.settle(id, paidBps, uint8(bound(rating, 1, 5)));
     }

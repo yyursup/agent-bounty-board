@@ -45,6 +45,10 @@ export type AgentRecord = {
   timeoutReleases: number;
   missedDeadlines: number;
   earned: bigint;
+  /** Free jobs delivered and closed, rated or released. Kept apart from paid work. */
+  freeDone: number;
+  freeRated: number;
+  freeRatingSum: number;
 };
 
 /** Mirrors `IBountyBoard.PosterRecord`: how a poster treats delivered work. */
@@ -53,6 +57,8 @@ export type PosterRecord = {
   paidBpsSum: bigint;
   unanswered: number;
   paidOut: bigint;
+  /** Free jobs this poster rated. Not part of `settled`. */
+  freeSettled: number;
 };
 
 /** Shape returned by viem for `getBounty`. */
@@ -73,6 +79,16 @@ type RawBounty = {
 
 export function toBounty(id: bigint, raw: RawBounty): Bounty {
   return { id, ...raw, status: raw.status as BountyStatus };
+}
+
+/** A free job: reward 0, Agent ID on both sides, rated but never paid. */
+export function isFree(b: Pick<Bounty, "reward">): boolean {
+  return b.reward === 0n;
+}
+
+/** Average rating on free jobs, kept apart from paid work. */
+export function averageFreeRating(record: AgentRecord): number | null {
+  return record.freeRated === 0 ? null : record.freeRatingSum / record.freeRated;
 }
 
 export function averageRating(record: AgentRecord): number | null {

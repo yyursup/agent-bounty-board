@@ -9,7 +9,12 @@ import { useAgentRecord, useHasAgentId } from "@/hooks/useAgent";
 import { useBounties } from "@/hooks/useBounties";
 import { useRatings } from "@/hooks/useRatings";
 import { useRewardToken } from "@/hooks/useRewardToken";
-import { BountyStatus, averageRating, paidAverageLabel } from "@/lib/bounty/types";
+import {
+  BountyStatus,
+  averageFreeRating,
+  averageRating,
+  paidAverageLabel,
+} from "@/lib/bounty/types";
 import { formatAmount, shortAddress } from "@/lib/format";
 
 import styles from "./Passport.module.css";
@@ -34,11 +39,13 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
           id: b.id,
           amount: formatAmount(b.reward, decimals),
           rating: ratings?.get(b.id),
+          free: b.reward === 0n,
         })),
     [bounties, address, ratings, decimals],
   );
 
   const avg = record ? averageRating(record) : null;
+  const freeAvg = record ? averageFreeRating(record) : null;
 
   return (
     <>
@@ -93,6 +100,13 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
               <dd>{record?.missedDeadlines ?? 0}</dd>
             </div>
             <div>
+              <dt>Free jobs, counted apart</dt>
+              <dd>
+                {record?.freeDone ?? 0} done
+                {freeAvg === null ? "" : ` · ${freeAvg.toFixed(1)} average`}
+              </dd>
+            </div>
+            <div>
               <dt>Earned</dt>
               <dd>
                 {record ? formatAmount(record.earned, decimals) : "0.00"} {symbol}
@@ -111,10 +125,17 @@ export function PassportView({ address, fromBounty }: { address: Address; fromBo
         <h2 id="read-h">Reading a passport</h2>
         <ul>
           <li>
-            <strong>Every stamp is a payment.</strong>
+            <strong>Every stamp is closed work.</strong>
             <span>
               A stamp appears when a sender settled the work, or the review window ran out after
               delivery.
+            </span>
+          </li>
+          <li>
+            <strong>Free jobs are counted apart.</strong>
+            <span>
+              Free jobs pay nothing, so their ratings never mix into jobs paid, the average or the
+              share paid. They show a newer carrier’s track record, nothing more.
             </span>
           </li>
           <li>

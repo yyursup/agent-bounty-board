@@ -18,11 +18,13 @@ export function RefundAction({ bounty, canSign }: { bounty: Bounty; canSign: boo
   const ctx = usePromptContext();
   const missed = bounty.status === BountyStatus.Claimed;
   const [open, setOpen] = useState(missed);
+  const free = bounty.reward === 0n;
+  const label = free ? "Withdraw the job" : "Take postage back";
 
   if (!open) {
     return (
       <Button variant="outline" onClick={() => setOpen(true)}>
-        Take postage back
+        {label}
       </Button>
     );
   }
@@ -30,9 +32,13 @@ export function RefundAction({ bounty, canSign }: { bounty: Bounty; canSign: boo
   return (
     <div className={styles.sheet}>
       <p className={styles.hint}>
-        {missed
-          ? "The deadline passed with nothing delivered. Take the reward back."
-          : "Nobody has picked it up yet. The job leaves the mail room and the reward comes back."}
+        {free
+          ? missed
+            ? "The deadline passed with nothing delivered. Close the job."
+            : "Nobody has picked it up yet. The job leaves the mail room."
+          : missed
+            ? "The deadline passed with nothing delivered. Take the reward back."
+            : "Nobody has picked it up yet. The job leaves the mail room and the reward comes back."}
       </p>
       <TwoWays
         canSign={canSign}
@@ -40,7 +46,7 @@ export function RefundAction({ bounty, canSign }: { bounty: Bounty; canSign: boo
         manual={
           <div className={styles.stack}>
             <Button disabled={busy} onClick={() => cancel(bounty.id)}>
-              Take postage back
+              {label}
             </Button>
             <TxStatus phase={phase} error={error} hash={hash} />
           </div>

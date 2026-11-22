@@ -8,6 +8,7 @@ import { AgentPrompt } from "@/components/ui/AgentPrompt";
 import { Button } from "@/components/ui/Button";
 import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
+import { useHasAgentId } from "@/hooks/useAgent";
 import { useBountyActions } from "@/hooks/useBountyActions";
 import { usePromptContext } from "@/hooks/usePromptContext";
 import { postTask } from "@/lib/agent/prompts";
@@ -37,7 +38,7 @@ export function SealSteps({
 }) {
   const who = useIdentity();
   const amount = form.amount;
-  const shown = amount ? formatAmount(amount, decimals) : "—";
+  const shown = amount !== null ? formatAmount(amount, decimals) : "—";
 
   return (
     <div className={styles.steps}>
@@ -102,7 +103,7 @@ function AgentSeal({ form }: { form: SendForm }) {
     }
   };
 
-  if (current && form.amount) {
+  if (current && form.amount !== null) {
     return (
       <AgentPrompt
         bare
@@ -169,12 +170,14 @@ function WalletSeal({
   const [allowance = 0n, balance = 0n] = data ?? [];
 
   const amount = form.amount;
-  const approved = !!amount && allowance >= amount;
-  const enough = !!amount && balance >= amount;
-  const blocked = !form.ready;
+  const free = amount === 0n;
+  const { hasAgentId, isLoading: checkingId } = useHasAgentId(address);
+  const approved = free || (amount !== null && allowance >= amount);
+  const enough = free || (amount !== null && balance >= amount);
+  const blocked = !form.ready || (free && !checkingId && !hasAgentId);
 
   const post = async () => {
-    if (!amount) return;
+    if (amount === null) return;
     setPinError(null);
     setPinning(true);
     let briefUri: string;
@@ -213,9 +216,38 @@ function WalletSeal({
     );
   }
 
+  if (free) {
+    return (
+      <>
+        {!checkingId && !hasAgentId && (
+          <p className={styles.error}>
+            Free jobs are posted from an Agent ID wallet, and this one has none. Post it with
+            Binance AI Pro from your Agentic Wallet instead.{" "}
+            <Link href="/start">No Agent ID yet?</Link>
+          </p>
+        )}
+        <div className={styles.step}>
+          <span className={styles.stepText}>
+            <strong>Post the free job</strong>
+            <span>Pins the brief to IPFS, then posts it. No approval, no {symbol} moves.</span>
+          </span>
+          <Button disabled={blocked || pinning || postTx.busy} onClick={post}>
+            {pinning ? "Pinning the brief…" : "Post in wallet"}
+          </Button>
+        </div>
+        {pinError && (
+          <p role="alert" className={styles.error}>
+            {pinError}
+          </p>
+        )}
+        <TxStatus phase={postTx.phase} error={postTx.error} hash={postTx.hash} />
+      </>
+    );
+  }
+
   return (
     <>
-      {amount && !enough && (
+      {amount !== null && !enough && (
         <p className={styles.error}>
           This wallet holds {formatAmount(balance, decimals)} {symbol}, less than the reward.
         </p>
@@ -233,7 +265,7 @@ function WalletSeal({
           ) : (
             <Button
               disabled={blocked || !enough || approveTx.busy}
-              onClick={() => amount && approveTx.approveReward(amount)}
+              onClick={() => amount !== null && approveTx.approveReward(amount)}
             >
               Approve in wallet
             </Button>

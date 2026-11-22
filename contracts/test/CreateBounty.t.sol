@@ -74,11 +74,8 @@ contract CreateBountyTest is BaseTest {
         board.createBounty(REWARD, deadline, REVIEW, false, FLOOR, BRIEF);
     }
 
-    function test_create_revertsOnZeroOrTooLargeReward() public {
+    function test_create_revertsOnTooLargeReward() public {
         vm.startPrank(poster);
-        vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReward.selector, 0));
-        board.createBounty(0, _deadline(), REVIEW, true, FLOOR, BRIEF);
-
         vm.expectRevert(abi.encodeWithSelector(IBountyBoard.InvalidReward.selector, MAX_REWARD + 1));
         board.createBounty(MAX_REWARD + 1, _deadline(), REVIEW, true, FLOOR, BRIEF);
         vm.stopPrank();

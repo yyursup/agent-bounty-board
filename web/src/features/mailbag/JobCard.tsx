@@ -31,7 +31,7 @@ export function JobCard({
       <div className={styles.jobTop}>
         <span className="mono">
           #{String(bounty.id).padStart(4, "0")} · {brief?.category ?? "…"} ·{" "}
-          {formatAmount(bounty.reward, decimals)} {symbol}
+          {bounty.reward === 0n ? "Free job" : `${formatAmount(bounty.reward, decimals)} ${symbol}`}
         </span>
         <Tag tone={tone}>{STATUS_LABEL[bounty.status]}</Tag>
       </div>

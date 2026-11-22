@@ -6,7 +6,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 import styles from "./Passport.module.css";
 
-export type PassportStamp = { id: bigint; amount: string; rating?: number };
+export type PassportStamp = { id: bigint; amount: string; rating?: number; free?: boolean };
 
 const PER_PAGE = 6;
 const TURN_MS = 800;
@@ -101,10 +101,8 @@ function StampGrid({
             style={{ transform: `rotate(${TILTS[n % TILTS.length]}deg)` }}
           >
             <span className="mono">#{String(s.id).padStart(4, "0")}</span>
-            <strong>{s.rating ? `${s.rating}/5` : "PAID"}</strong>
-            <span className="mono">
-              {s.amount} {symbol}
-            </span>
+            <strong>{s.rating ? `${s.rating}/5` : s.free ? "DONE" : "PAID"}</strong>
+            <span className="mono">{s.free ? "FREE JOB" : `${s.amount} ${symbol}`}</span>
           </li>
         );
       })}

@@ -47,20 +47,25 @@ export function useSendForm(
   const [reward, setReward] = useState("");
   const [deadline, setDeadline] = useState(defaultDeadline);
   const [reviewHours, setReviewHours] = useState<(typeof REVIEW_WINDOWS)[number]>(48);
-  /** Agent ID holders only by default; the sender can open the job to any wallet. */
-  const [agentIdOnly, setAgentIdOnly] = useState(true);
-  /** Least share the agent gets once it delivers, in whole percent. Open jobs have none. */
+  /** A free job pays nothing: it's for carriers building a record. Agent ID on both sides. */
+  const [free, setFree] = useState(false);
+  /** Agent ID holders only by default; the sender can open a paid job to any wallet. */
+  const [openToAll, setOpenToAll] = useState(false);
+  const agentIdOnly = free || !openToAll;
+  /** Least share the agent gets once it delivers, in whole percent. Open and free jobs have none. */
   const [floorPercent, setFloorPercent] = useState("20");
-  const floorBps = agentIdOnly ? Math.round(Number(floorPercent) * 100) : 0;
+  const floorBps = agentIdOnly && !free ? Math.round(Number(floorPercent) * 100) : 0;
 
+  /** The reward in token units: 0n for a free job, null while the typed amount isn't valid. */
   const amount = useMemo(() => {
+    if (free) return 0n;
     try {
       const v = parseUnits(reward.trim().replace(",", "."), decimals);
       return v > 0n ? v : null;
     } catch {
       return null;
     }
-  }, [reward, decimals]);
+  }, [reward, decimals, free]);
 
   const deadlineUnix = Math.floor(new Date(deadline).getTime() / 1000);
 
@@ -83,6 +88,7 @@ export function useSendForm(
     }
     if (
       agentIdOnly &&
+      !free &&
       (!Number.isFinite(floorBps) || floorBps < floorRange.min || floorBps > floorRange.max)
     ) {
       list.push(`Set a floor between ${floorRange.min / 100}% and ${floorRange.max / 100}%.`);
@@ -98,6 +104,7 @@ export function useSendForm(
     maxReward,
     deadlineUnix,
     agentIdOnly,
+    free,
     floorBps,
     floorRange,
   ]);
@@ -142,6 +149,7 @@ export function useSendForm(
       deadline,
       reviewHours,
       agentIdOnly,
+      free,
       floorPercent,
     },
     set: {
@@ -155,7 +163,8 @@ export function useSendForm(
       reward: setReward,
       deadline: setDeadline,
       reviewHours: setReviewHours,
-      agentIdOnly: setAgentIdOnly,
+      agentIdOnly: (v: boolean) => setOpenToAll(!v),
+      free: setFree,
       floorPercent: (v: string) => setFloorPercent(v.replace(/[^0-9]/g, "").slice(0, 2)),
     },
     floorBps,

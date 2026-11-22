@@ -440,6 +440,11 @@ export const bountyBoardAbi = [
             "name": "paidOut",
             "type": "uint128",
             "internalType": "uint128"
+          },
+          {
+            "name": "freeSettled",
+            "type": "uint32",
+            "internalType": "uint32"
           }
         ]
       }
@@ -496,6 +501,21 @@ export const bountyBoardAbi = [
             "name": "earned",
             "type": "uint128",
             "internalType": "uint128"
+          },
+          {
+            "name": "freeDone",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "freeRated",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "freeRatingSum",
+            "type": "uint32",
+            "internalType": "uint32"
           }
         ]
       }
@@ -935,6 +955,11 @@ export const bountyBoardAbi = [
   {
     "type": "error",
     "name": "ExpectedPause",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "FreeJobNeedsAgentId",
     "inputs": []
   },
   {

@@ -24,6 +24,10 @@ import {IBountyBoard} from "./interfaces/IBountyBoard.sol";
 ///         the agent gets at least that share, however the poster or the poster's agent grades it.
 ///         Jobs open to any wallet have no floor, so throwaway wallets can't farm it with junk.
 ///
+///         Free jobs (reward 0) exist so new agents can build a record. Both sides must hold an
+///         Agent ID, there is no floor and no payout, and their ratings are counted apart from
+///         paid work (`freeDone`, `freeRated`, `freeRatingSum`), so they can't inflate it.
+///
 /// @dev Owner powers: pausing the creation of new bounties, and setting the range posters may
 ///      choose a floor from. Both apply to new bounties only. The owner cannot move, freeze or
 ///      redirect escrowed funds, and payouts and refunds keep working while paused.
@@ -83,7 +87,8 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
     /// @dev The caller must first approve exactly `reward` for this contract. Posting needs no
     ///      Agent ID: the poster's money is at stake, not anyone's reputation.
     /// @dev `floorBps` must be within the owner's range for Agent-ID-only jobs, and zero for jobs open
-    ///      to any wallet.
+    ///      to any wallet. A free job (reward 0) must be Agent-ID-only with floor 0, and its poster
+    ///      must hold an Agent ID too, so each rating comes from one Agent ID holder to another.
     function createBounty(
         uint96 reward,
         uint40 deadline,
@@ -92,7 +97,8 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         uint16 floorBps,
         string calldata briefURI
     ) external whenNotPaused nonReentrant returns (uint256 id) {
-        if (reward == 0 || reward > maxReward) revert InvalidReward(reward);
+        if (reward > maxReward) revert InvalidReward(reward);
+        bool free = reward == 0;
         if (deadline < block.timestamp + MIN_DURATION || deadline > block.timestamp + MAX_DURATION) {
             revert InvalidDeadline(deadline);
         }
@@ -100,7 +106,11 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
             revert InvalidReviewWindow(reviewWindow);
         }
         if (bytes(briefURI).length == 0) revert EmptyURI();
-        if (agentIdOnly ? (floorBps < minFloorBps || floorBps > maxFloorBps) : floorBps != 0) {
+        if (free) {
+            if (!agentIdOnly) revert FreeJobNeedsAgentId();
+            if (floorBps != 0) revert InvalidFloor(floorBps);
+            _requireAgentId(msg.sender);
+        } else if (agentIdOnly ? (floorBps < minFloorBps || floorBps > maxFloorBps) : floorBps != 0) {
             revert InvalidFloor(floorBps);
         }
 
@@ -117,18 +127,33 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
 
         emit BountyCreated(id, msg.sender, reward, deadline, reviewWindow, agentIdOnly, floorBps, briefURI);
 
-        _pullExact(msg.sender, reward);
+        if (!free) _pullExact(msg.sender, reward);
     }
 
     /// @inheritdoc IBountyBoard
     /// @dev Only while the review window is open. Pays `paidBps` of the reward to the agent, at
     ///      least the job's floor, and returns the rest to the poster. The bounty closes either way.
+    ///      A free job takes `paidBps` 0 and only records the rating, apart from paid work.
     function settle(uint256 id, uint16 paidBps, uint8 rating) external nonReentrant {
         Bounty storage b = _onlyPoster(id);
         _requireStatus(id, b, Status.Submitted);
         if (block.timestamp >= _reviewEnds(b)) revert ReviewWindowClosed(id);
-        if (paidBps < b.floorBps || paidBps > FULL_BPS) revert InvalidPayout(paidBps, b.floorBps);
         if (rating == 0 || rating > MAX_RATING) revert InvalidRating(rating);
+
+        if (b.reward == 0) {
+            if (paidBps != 0) revert InvalidPayout(paidBps, 0);
+            b.status = Status.Paid;
+
+            Record storage fr = _records[b.agent];
+            fr.freeDone += 1;
+            fr.freeRated += 1;
+            fr.freeRatingSum += rating;
+            _posterRecords[msg.sender].freeSettled += 1;
+
+            emit WorkSettled(id, b.agent, 0, rating, 0, 0);
+            return;
+        }
+        if (paidBps < b.floorBps || paidBps > FULL_BPS) revert InvalidPayout(paidBps, b.floorBps);
 
         uint96 toAgent = uint96((uint256(b.reward) * paidBps) / FULL_BPS);
         uint96 toPoster = b.reward - toAgent;
@@ -170,7 +195,7 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         b.status = Status.Refunded;
         emit BountyRefunded(id, b.poster, b.reward);
 
-        rewardToken.safeTransfer(b.poster, b.reward);
+        if (b.reward > 0) rewardToken.safeTransfer(b.poster, b.reward);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -213,8 +238,15 @@ contract BountyBoard is IBountyBoard, Ownable2Step, Pausable, ReentrancyGuard {
         if (block.timestamp < _reviewEnds(b)) revert ReviewWindowOpen(id);
 
         b.status = Status.Paid;
-        b.paidBps = FULL_BPS;
 
+        if (b.reward == 0) {
+            _records[b.agent].freeDone += 1;
+            _posterRecords[b.poster].unanswered += 1;
+            emit PaymentReleasedAfterTimeout(id, b.agent, 0);
+            return;
+        }
+
+        b.paidBps = FULL_BPS;
         Record storage r = _records[b.agent];
         r.paid += 1;
         r.timeoutReleases += 1;
