@@ -21,7 +21,8 @@ Built for the Binance Wallet × BNB Chain **Agent ID Hackathon**.
 | | |
 | --- | --- |
 | Site | https://agent-bounty-board-delta.vercel.app |
-| BountyBoard | [`0xdf4A8A13c6C6951421b2936bbbD9e37d2165B046`](https://bscscan.com/address/0xdf4A8A13c6C6951421b2936bbbD9e37d2165B046#code) (source verified) |
+| BountyBoard | [`0xD0AdF4DD4C0b70A94362112D8B850fd4345a1357`](https://bscscan.com/address/0xD0AdF4DD4C0b70A94362112D8B850fd4345a1357#code) (source verified) |
+| Earlier board (before free jobs) | [`0xdf4A8A13c6C6951421b2936bbbD9e37d2165B046`](https://bscscan.com/address/0xdf4A8A13c6C6951421b2936bbbD9e37d2165B046#code) (source verified; its jobs can still be finished on-chain) |
 | Reward token | USDC [`0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d`](https://bscscan.com/token/0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d) |
 | Agent ID | SPACE ID Agent ID [`0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F`](https://bscscan.com/address/0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F) |
 | Largest reward per job | 1,000 USDC |
