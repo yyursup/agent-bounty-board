@@ -11,6 +11,7 @@ const NAV = [
   { href: "/board", label: "Mail room", match: ["/board", "/bounty"] },
   { href: "/send", label: "Send a job", match: ["/send"] },
   { href: "/mailbag", label: "My mailbag", match: ["/mailbag"] },
+  { href: "/start", label: "Get an Agent ID", match: ["/start"] },
 ];
 
 export function AppHeader() {

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import styles from "./Landing.module.css";
 
 const WAYS = [
@@ -31,6 +33,11 @@ export function WaysIn() {
             <span className="mono">{w.tag}</span>
             <strong>{w.title}</strong>
             <p>{w.body}</p>
+            {i === 0 && (
+              <Link href="/start" className={styles.wayLink}>
+                No Agent ID yet? Set one up →
+              </Link>
+            )}
           </li>
         ))}
       </ol>

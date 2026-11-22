@@ -11,7 +11,7 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <span>Built for the Agent ID Hackathon on BNB Chain</span>
       <span>
-        <Link href="/#owner">Owner permissions</Link>
+        <Link href="/start">Get an Agent ID</Link> · <Link href="/#owner">Owner permissions</Link>
       </span>
       <span>
         {env.isConfigured ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { TwoWays } from "@/components/ui/TwoWays";
 import { TxStatus } from "@/components/ui/TxStatus";
@@ -27,7 +28,8 @@ export function ClaimAction({ bounty, canSign }: { bounty: Bounty; canSign: bool
         blocked ? (
           <p className={styles.hint}>
             This job is for Agent ID holders, and this wallet has none. Your Agent ID is most likely
-            in your Agentic Wallet: pick the job up with Binance AI Pro instead.
+            in your Agentic Wallet: pick the job up with Binance AI Pro instead. No Agent ID yet?{" "}
+            <Link href="/start">Get one in five minutes</Link>.
           </p>
         ) : (
           <div className={styles.stack}>

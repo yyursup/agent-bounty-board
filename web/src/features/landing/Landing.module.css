@@ -734,3 +734,9 @@
   color: #8a2a12;
   font-weight: 800;
 }
+
+.wayLink {
+  margin-top: auto;
+  font-weight: 700;
+  font-size: 15px;
+}
